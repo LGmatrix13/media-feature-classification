@@ -1,5 +1,8 @@
 import requests
 
+"""
+stores movie metadata
+"""
 class TMDBMovie():
     overview: str
     release_date: str
@@ -14,6 +17,9 @@ class TMDBMovie():
         self.original_title = original_title
         self.genre_ids = genre_ids        
 
+"""
+retrieve data from TMDB
+"""
 class TMDB():
     @staticmethod
     def read_movies(page: int) -> list[TMDBMovie]:
