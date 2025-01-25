@@ -1,0 +1,2 @@
+class Sentiment():
+    pass
