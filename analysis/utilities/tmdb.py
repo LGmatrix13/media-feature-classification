@@ -15,12 +15,21 @@ class TMDBMovie():
         self.release_date = release_date
         self.vote_average = vote_average
         self.original_title = original_title
-        self.genre_ids = genre_ids        
+        self.genre_ids = genre_ids
+
+    def to_dict(self):
+        return {
+            "overview": self.overview,
+            "release_date": self.release_date,
+            "vote_average": self.vote_average,
+            "original_title": self.original_title,
+            "genre_ids": self.genre_ids
+        }
 
 """
 retrieve data from TMDB
 """
-class TMDB():
+class Client():
     @staticmethod
     def read_movies(page: int) -> list[TMDBMovie]:
         r = requests.get(f"https://api.themoviedb.org/3/discover/movie?page={page}", headers={
@@ -28,20 +37,17 @@ class TMDB():
             "accept": "application/json"
          })
         data = r.json()
-        return [
-            TMDBMovie(
-                overview=result["overview"],
-                release_date=result["release_date"],
-                vote_average=result["vote_average"],
-                original_title=result["original_title"],
-                genre_ids=result["genre_ids"]
-            )
-            for result in data["results"]
-        ]
+        if data.get('results') is not None:
+            return [
+                TMDBMovie(
+                    overview=result["overview"],
+                    release_date=result["release_date"],
+                    vote_average=result["vote_average"],
+                    original_title=result["original_title"],
+                    genre_ids=result["genre_ids"]
+                )
+                for result in data.get("results")
+            ]
+        else:
+            return []
     
-def main():
-    movies: list[TMDBMovie] = TMDB.read_movies(page=10)
-    print([movie.overview for movie in movies])    
-
-if __name__ == "__main__":
-    main()
