@@ -1,2 +1,0 @@
-class TFIDF():
-    pass
