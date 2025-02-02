@@ -23,7 +23,7 @@ class Elastic:
                     }
                 }
             )
-            
+
     @staticmethod
     def __index(index_name: str, series: pd.Series):
         body = series.to_dict()
@@ -40,4 +40,3 @@ class Elastic:
 
     def index_music(music: pd.Series):
         Elastic.__index(index_name="music", series=music)
-
