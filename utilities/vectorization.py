@@ -3,7 +3,7 @@ import nltk
 import pandas as pd
 import gensim.downloader as api
 
-nltk.download('punkt_tab')
+nltk.download('punkt')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
