@@ -29,7 +29,7 @@ class TMDBMovie():
 """
 retrieve data from TMDB
 """
-class Client():
+class TMDB():
     @staticmethod
     def read_movies(page: int) -> list[TMDBMovie]:
         r = requests.get(f"https://api.themoviedb.org/3/discover/movie?page={page}", headers={
