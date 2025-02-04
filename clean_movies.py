@@ -3,6 +3,7 @@ import pandas as pd
 from utilities.vectorization import Vectorization
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 def clean_columns(df: pd.DataFrame, verbose: bool = True):
     if verbose: logger.info("Cleaning columns...")
@@ -10,8 +11,8 @@ def clean_columns(df: pd.DataFrame, verbose: bool = True):
 
 def clean_rows(df: pd.DataFrame, verbose: bool = True):
     if verbose: logger.info("Cleaning rows...")
-    df['overview_vector'] = Vectorization.word2vec(corpus=df['overview'])
-    df['title_vector'] = Vectorization.word2vec(corpus=df["title"])
+    df['overview_vector'] = Vectorization.word2vec(corpus=df['overview'], verbose=verbose)
+    df['title_vector'] = Vectorization.word2vec(corpus=df["title"], verbose=verbose)
 
 def main(verbose: bool = True):
     movies = pd.read_csv("./data/original/movies.csv")
