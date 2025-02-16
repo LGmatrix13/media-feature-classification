@@ -4,6 +4,7 @@ import pandas as pd
 import gensim.downloader as api 
 import numpy as np
 from nltk.tokenize import word_tokenize
+import pyarrow.parquet as pq
 
 nltk.download('punkt')
 
@@ -15,20 +16,34 @@ def embed(text: str, model):
     return None
 
 def main(args: Namespace):
-    input_df = pd.read_parquet(args.input_file)
     model = api.load("word2vec-google-news-300")
-    output_data = []
     
-    for index, row in input_df.iterrows():
-        print(f"Processing row {index}...")
-        if row[args.text_column] is None:
-            output_data.append({ "pk": row[args.pk_columnn], "vector": None })
-        else:
-            vector = embed(row[args.text_column], model)
-            output_data.append({ "pk": row[args.pk_columnn], "vector": vector })
+    chunksize = 10 ** 5
+    chunk_idx = 0
+    parquet_file = pq.ParquetFile(args.input_file)
+    files = []
+    for batch in parquet_file.iter_batches(batch_size=chunksize):
+        print(f"Processing chunk {chunk_idx}...")
+        output_data = []
+        batch_df = batch.to_pandas()
 
-    output_df = pd.DataFrame(output_data)
-    output_df.to_parquet(args.output_file, index=False)
+        for index, row in batch_df.iterrows():
+            print(f"Vectorizing row {index}...")
+
+            if row[args.text_column] is None:
+                output_data.append({ "pk": row[args.pk_columnn], "vector": None })
+            else:
+                vector = embed(row[args.text_column], model)
+                output_data.append({ "pk": row[args.pk_columnn], "vector": vector })
+
+        output_df = pd.DataFrame(output_data)
+        output_df.to_parquet(f"./data/raw/vectorize_{chunk_idx}.parquet", index=False)
+        files.append(f"./data/raw/vectorize_{chunk_idx}.parquet")
+
+    schema = pq.ParquetFile(files[0]).schema_arrow
+    with pq.ParquetWriter(args.output_file, schema=schema) as writer:
+        for file in files:
+            writer.write_table(pq.read_table(file, schema=schema))
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Run a vectorization process on a given dataset using a pretrained Word2Vec model.")
