@@ -1,7 +1,8 @@
+from collections import Counter
 import pandas as pd
 
 from statistics import mean, median, stdev
-from typing import Sequence, Callable, Any
+from typing import  Sequence, Callable, Any
 
 import os
 import sys
@@ -68,10 +69,21 @@ def merge_uncommon(items: Sequence[str], default: str = 'OTHER',
 
     returns a transformed version of items where uncommon labels are replaced with the default value
     """
-    num_kwargs = (max_categories is not None) + (min_count is not None) + (min_pct is not None)
-    if num_kwargs != 1: raise TypeError("Invalid number of keyword arguments")
+    counts = Counter(items)
+    total = len(items)
 
-    raise NotImplementedError('TODO: Implement this function')
+    if max_categories is not None:
+        most_common = [label for label, _ in counts.most_common(max_categories)]
+        return [item if item in most_common else default for item in items]
+        
+    if min_count is not None:
+        return [item if counts[item] >= min_count else default for item in items]
+    
+    if min_pct is not None:
+        min_count_required = total * min_pct
+        return [item if counts[item] >= min_count_required else default for item in items]
+    
+    raise ValueError("At least one of max_categories, min_count, or min_pct must be provided")
 
 def make_named_bins(items: Sequence[int|float], cut: str, names: Sequence[str]):
     """Bins items using the specified strategy and represents each with one of the given names"""

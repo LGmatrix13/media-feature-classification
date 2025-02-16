@@ -1,7 +1,7 @@
 import pandas as pd
 
 def chunk_movies():
-    chunksize = 10 ** 4
+    chunksize = 10 ** 5
     chunk_idx = 0
     metadata = pd.DataFrame()
     overview = pd.DataFrame()
@@ -24,7 +24,7 @@ def chunk_movies():
             ]
         metadata_chunk = chunk.loc[english_only, metadata_columns]
         metadata = pd.concat([metadata, metadata_chunk])
-        overview_chunk = chunk.loc[english_only, ['overview']]
+        overview_chunk = chunk.loc[english_only, ['id', 'overview']]
         overview = pd.concat([overview, overview_chunk])
         chunk_idx += 1
 
@@ -42,7 +42,7 @@ def chunk_music():
         english_only = chunk['language_cld3'] == 'en'
         metadata_chunk = chunk.loc[english_only, ['title', 'tag', 'artist', 'year', 'views', 'features']]
         metadata = pd.concat([metadata, metadata_chunk])
-        lyrics_chunk = chunk.loc[english_only, ['lyrics','language_cld3']]
+        lyrics_chunk = chunk.loc[english_only, ['id','lyrics']]
         lyrics = pd.concat([lyrics, lyrics_chunk])
         chunk_idx += 1
 
@@ -50,4 +50,4 @@ def chunk_music():
     lyrics.to_parquet('./data/raw/music_lyrics_metadata.parquet')
 
 if __name__ == "__main__":
-    main()
+    chunk_movies()

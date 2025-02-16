@@ -35,7 +35,6 @@ if __name__ == "__main__":
     parser.add_argument("input_file", type=str, help="Path to input dataset")
     parser.add_argument("pk_columnn", type=str, help="id/primary key of the input dataset")
     parser.add_argument("text_column", type=str, help="Column name containing text data")
-    parser.add_argument("model_path", type=str, help="Path to the pretrained Word2Vec model")
     parser.add_argument("output_file", type=str, help="Path to export output dataset")
     args = parser.parse_args()
     main(args)
