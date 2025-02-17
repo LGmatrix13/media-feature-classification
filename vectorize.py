@@ -6,6 +6,7 @@ import numpy as np
 from nltk.tokenize import word_tokenize
 import pyarrow.parquet as pq
 import os
+
 nltk.download('punkt')
 
 def embed(text: str, model):

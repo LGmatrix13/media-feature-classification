@@ -13,7 +13,6 @@ def load_data(path: str, columns: dict[str,DTypeLike], missing: dict[str,set[str
 
     returns a DataFrame loaded from the filepath given with the specified columns and types
     """
-    
     df = pd.read_parquet(path)
     for name, type in columns.items():
         df[name].astype(type)
