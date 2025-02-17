@@ -5,7 +5,7 @@ import gensim.downloader as api
 import numpy as np
 from nltk.tokenize import word_tokenize
 import pyarrow.parquet as pq
-
+import os
 nltk.download('punkt')
 
 def embed(text: str, model):
@@ -45,6 +45,7 @@ def main(args: Namespace):
     with pq.ParquetWriter(args.output_file, schema=schema) as writer:
         for file in files:
             writer.write_table(pq.read_table(file, schema=schema))
+            os.remove(file)
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Run a vectorization process on a given dataset using a pretrained Word2Vec model.")
