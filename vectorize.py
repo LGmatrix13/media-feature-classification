@@ -18,7 +18,7 @@ def embed(text: str, model):
 def main(args: Namespace):
     model = api.load("word2vec-google-news-300")
     
-    chunksize = 10 ** 5
+    chunksize = 10 ** 6
     chunk_idx = 0
     parquet_file = pq.ParquetFile(args.input_file)
     files = []
@@ -39,6 +39,7 @@ def main(args: Namespace):
         output_df = pd.DataFrame(output_data)
         output_df.to_parquet(f"./data/raw/vectorize_{chunk_idx}.parquet", index=False)
         files.append(f"./data/raw/vectorize_{chunk_idx}.parquet")
+        chunk_idx += 1
 
     schema = pq.ParquetFile(files[0]).schema_arrow
     with pq.ParquetWriter(args.output_file, schema=schema) as writer:
