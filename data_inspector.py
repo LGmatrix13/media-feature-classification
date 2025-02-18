@@ -39,21 +39,24 @@ def make_plot(df: pd.DataFrame, col_name: str, action: str, args: list[Any], kwa
 
 def make_density_plot(data: Sequence[int|float]) -> Image.Image:
     """Create a density to show the distribution of a variable."""
+    sns.kdeplot(data)
+    return get_image()
     # NOTE: the get_image function may be helpful here converting the current matplotlib plot to an image
-    raise NotImplementedError('TODO: Implement this function')
 
 def make_boxplot(data: Sequence[int|float]) -> Image.Image:
     """Create a boxplot to show the distribution of a variable."""
+    sns.boxplot(data)
+    return get_image()
     # NOTE: the get_image function may be helpful here converting the current matplotlib plot to an image
-    raise NotImplementedError('TODO: Implement this function')
 
 def make_barplot(data: Sequence[str], name:str|None=None, order:list[str]|None=None) -> Image.Image:
     """
     Create a bar plot to show the distribution of a binary, categorical, or ordinal variable
     If an order is provided, counts are shown in that order on the x-axis, otherwise alphabetical order is used.
     """
+    sns.barplot(data)
+    return get_image()
     # NOTE: the get_image function may be helpful here converting the current matplotlib plot to an image
-    raise NotImplementedError('TODO: Implement this function')
 
 def count_categories(items: Iterable[K]) -> dict[K, int]:
     """Returns a dictionary mapping each unique item in items to the number of times it appears"""
@@ -91,3 +94,10 @@ def get_image() -> Image.Image:
     plt.clf()
     # return the PIL Image object (temporary file was automatically deleted)
     return img
+
+from sklearn.datasets import load_iris
+import numpy as np
+iris = load_iris()
+data1 = pd.DataFrame(data= np.c_[iris['data'], iris['target']],
+                     columns= iris['feature_names'] + ['target'])
+make_barplot(data1).show()
