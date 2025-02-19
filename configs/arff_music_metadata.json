@@ -1,11 +1,8 @@
 {
   "relation": "MUSIC_METADATA",
   "attributes": {
-    "title": "nominal",
     "tag": "nominal",
-    "artist": "nominal",
     "year": "numeric",
-    "views": "numeric",
-    "features": "nominal"
+    "views": "numeric"
   }
 }

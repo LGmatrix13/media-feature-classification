@@ -1,0 +1,10 @@
+{
+  "relation": "MOVIES_METADATA",
+  "attributes": {
+    "vote_average": "numeric",
+    "vote_count": "numeric",
+    "revenue": "numeric",
+    "adult": "nominal",
+    "budget": "numeric"
+  }
+}
