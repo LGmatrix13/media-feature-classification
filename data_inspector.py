@@ -94,10 +94,3 @@ def get_image() -> Image.Image:
     plt.clf()
     # return the PIL Image object (temporary file was automatically deleted)
     return img
-
-from sklearn.datasets import load_iris
-import numpy as np
-iris = load_iris()
-data1 = pd.DataFrame(data= np.c_[iris['data'], iris['target']],
-                     columns= iris['feature_names'] + ['target'])
-make_barplot(data1).show()
