@@ -24,6 +24,10 @@
   },
   "cleaning": [
     {
+      "attribute": "title",
+      "missing_strategy": "remove"
+    },
+    {
       "attribute": "tag",
       "missing_strategy": "remove"
     },
@@ -36,13 +40,7 @@
       "missing_strategy": "replace_missing_with_median"
     }
   ],
-  "transforming": [
-    {
-      "action": "make_mean_bins",
-      "attribute": "views",
-      "args": ["freq", 5]
-    }
-  ],
+  "transforming": [],
   "plotting": [
     {
       "action": "make_density_plot",

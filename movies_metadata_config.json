@@ -3,6 +3,9 @@
   "clean_dataset_path": "./data/cleaned/movies_metadata.parquet",
   "plot_directory_path": "plots",
   "attributes": {
+    "title": {
+      "type": "nominal"
+    },
     "vote_average": {
       "type": "real"
     },
@@ -10,7 +13,10 @@
       "type": "real"
     },
     "status": {
-      "type": "nomial"
+      "type": "nominal"
+    },
+    "release_date": {
+      "type": "nominal"
     },
     "revenue": {
       "type": "real"
@@ -18,33 +24,51 @@
     "runtime": {
       "type": "real"
     },
+    "adult": {
+      "type": "nominal"
+    },
     "budget": {
       "type": "real"
-    },
-    "adult": {
-      "type": "nomial"
     },
     "popularity": {
       "type": "real"
     },
     "genres": {
-      "type": "nomial"
+      "type": "nominal"
+    },
+    "production_companies": {
+      "type": "nominal"
+    },
+    "production_countries": {
+      "type": "nominal"
+    },
+    "keywords": {
+      "type": "nominal"
     }
   },
   "cleaning": [
+    {
+      "attribute": "title",
+      "missing_strategy": "remove"
+    },
+    {
+      "attribute": "release_date",
+      "missing_strategy": "remove"
+    },
     {
       "attribute": "vote_average",
       "missing_strategy": "replace_missing_with_mean"
     },
     {
-      "attribute": "year",
-      "missing_strategy": "replace_missing_with_median"
+      "attribute": "vote_count",
+      "missing_strategy": "replace_missing_with_mean"
     },
     {
-      "attribute": "views",
-      "missing_strategy": "replace_missing_with_median"
+      "attribute": "revenue",
+      "missing_strategy": "replace_missing_with_mean"
     }
   ],
+  "transforming": [],
   "plotting": [
     {
       "action": "make_density_plot",
@@ -57,6 +81,30 @@
       "name": "RevenueHistogram",
       "kwargs": {
         "name": "Revenuse"
+      }
+    },
+    {
+      "action": "make_barplot",
+      "attribute": "vote_average",
+      "name": "VoteAverageHistogram",
+      "kwargs": {
+        "name": "VoteAverage"
+      }
+    },
+    {
+      "action": "make_boxplot",
+      "attribute": "vote_average",
+      "name": "VoteAverageHistogram",
+      "kwargs": {
+        "name": "VoteAverage"
+      }
+    },
+    {
+      "action": "make_barplot",
+      "attribute": "vote_count",
+      "name": "VoteCountHistogram",
+      "kwargs": {
+        "name": "VoteCount"
       }
     }
   ]

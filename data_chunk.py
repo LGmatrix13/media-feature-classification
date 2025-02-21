@@ -40,7 +40,7 @@ def chunk_music():
     for chunk in pd.read_csv('./data/raw/music.csv', chunksize=chunksize, usecols=['title', 'tag', 'artist', 'year', 'views', 'features', 'lyrics', 'id', 'language_cld3']):
         print(f"Running chunk {chunk_idx}...")
         english_only = chunk['language_cld3'] == 'en'
-        metadata_chunk = chunk.loc[english_only, ['title', 'tag', 'artist', 'year', 'views', 'features']]
+        metadata_chunk = chunk.loc[english_only, ['id', 'title', 'tag', 'artist', 'year', 'views', 'features']]
         metadata = pd.concat([metadata, metadata_chunk])
         lyrics_chunk = chunk.loc[english_only, ['id','lyrics']]
         lyrics = pd.concat([lyrics, lyrics_chunk])
