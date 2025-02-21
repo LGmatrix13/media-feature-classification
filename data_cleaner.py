@@ -40,23 +40,23 @@ def remove_missing(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
 
 def replace_missing_with_value(df: pd.DataFrame, col_name: str, value: Any) -> Iterable[Any]:
     """Returns a modified version of the given column where missing values are filled with the given static value"""
-    df[col_name].replace({ None: value, np.nan: value }, inplace=True)
+    df[col_name] = df[col_name].replace({ None: value, np.nan: value })
     return df[col_name]
 
 def replace_missing_with_mode(df: pd.DataFrame, col_name: str) -> Iterable[Any]:
     """Returns a modified version of the given column where missing values are filled with the most common value"""
     mode = df[col_name].mode().values[0]
-    df[col_name].replace({ None: mode, np.nan: mode }, inplace=True)
+    df[col_name] = df[col_name].replace({ None: mode, np.nan: mode })
     return df[col_name]
 
 def replace_missing_with_mean(df: pd.DataFrame, col_name: str) -> Iterable[Any]:
     """Returns a modified version of the given column where missing values are filled with the mean value"""
     mean = df[col_name].mean()
-    df[col_name].replace({ None: mean, np.nan: mean }, inplace=True)
+    df[col_name] = df[col_name].replace({ None: mean, np.nan: mean })
     return df[col_name]
 
 def replace_missing_with_median(df: pd.DataFrame, col_name: str) -> Iterable[Any]:
     """Returns a modified version of the given column where missing values are filled with the median value"""
     median = df[col_name].median()
-    df[col_name].replace({ None: median, np.nan: median }, inplace=True)
+    df[col_name] = df[col_name].replace({ None: median, np.nan: median })
     return df[col_name]

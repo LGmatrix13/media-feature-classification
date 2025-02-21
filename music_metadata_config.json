@@ -1,0 +1,63 @@
+{
+  "raw_dataset_path": "./data/raw/music_metadata.parquet",
+  "clean_dataset_path": "./data/cleaned/music_metadata.parquet",
+  "plot_directory_path": "plots",
+  "attributes": {
+    "title": {
+      "type": "nominal"
+    },
+    "tag": {
+      "type": "nominal"
+    },
+    "artist": {
+      "type": "nominal"
+    },
+    "year": {
+      "type": "real"
+    },
+    "views": {
+      "type": "real"
+    },
+    "features": {
+      "type": "nominal"
+    }
+  },
+  "cleaning": [
+    {
+      "attribute": "tag",
+      "missing_strategy": "remove"
+    },
+    {
+      "attribute": "year",
+      "missing_strategy": "replace_missing_with_median"
+    },
+    {
+      "attribute": "views",
+      "missing_strategy": "replace_missing_with_median"
+    }
+  ],
+  "transforming": [],
+  "plotting": [
+    {
+      "action": "make_density_plot",
+      "attribute": "views",
+      "name": "ViewsDensityPlot"
+    },
+    {
+      "action": "make_barplot",
+      "attribute": "tag",
+      "name": "TagHistogram",
+      "kwargs": {
+        "name": "Tags"
+      }
+    },
+    {
+      "action": "make_barplot",
+      "attribute": "views",
+      "name": "ViewsHistogram",
+      "kwargs": {
+        "name": "Views"
+      }
+    }
+  ]
+}

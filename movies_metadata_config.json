@@ -1,0 +1,70 @@
+{
+  "raw_dataset_path": "./data/raw/movies_metadata.parquet",
+  "clean_dataset_path": "./data/cleaned/movies_metadata.parquet",
+  "plot_directory_path": "plots",
+  "attributes": {
+    "vote_average": {
+      "type": "real"
+    },
+    "vote_count": {
+      "type": "real"
+    },
+    "status": {
+      "type": "nomial"
+    },
+    "revenue": {
+      "type": "real"
+    },
+    "runtime": {
+      "type": "real"
+    },
+    "budget": {
+      "type": "real"
+    },
+    "adult": {
+      "type": "nomial"
+    },
+    "popularity": {
+      "type": "real"
+    },
+    "genres": {
+      "type": "nomial"
+    }
+  },
+  "cleaning": [
+    {
+      "attribute": "tag",
+      "missing_strategy": "remove"
+    },
+    {
+      "attribute": "year",
+      "missing_strategy": "replace_missing_with_median"
+    },
+    {
+      "attribute": "views",
+      "missing_strategy": "replace_missing_with_median"
+    }
+  ],
+  "transforming": [
+    {
+      "action": "make_mean_bins",
+      "attribute": "views",
+      "args": ["freq", 5]
+    }
+  ],
+  "plotting": [
+    {
+      "action": "make_density_plot",
+      "attribute": "views",
+      "name": "ViewsDensityPlot"
+    },
+    {
+      "action": "make_barplot",
+      "attribute": "tag",
+      "name": "TagHistogram",
+      "kwargs": {
+        "name": "Tags"
+      }
+    }
+  ]
+}

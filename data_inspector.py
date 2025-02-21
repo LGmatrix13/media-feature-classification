@@ -41,22 +41,19 @@ def make_density_plot(data: Sequence[int|float]) -> Image.Image:
     """Create a density to show the distribution of a variable."""
     sns.kdeplot(data)
     return get_image()
-    # NOTE: the get_image function may be helpful here converting the current matplotlib plot to an image
 
 def make_boxplot(data: Sequence[int|float]) -> Image.Image:
     """Create a boxplot to show the distribution of a variable."""
     sns.boxplot(data)
     return get_image()
-    # NOTE: the get_image function may be helpful here converting the current matplotlib plot to an image
 
 def make_barplot(data: Sequence[str], name:str|None=None, order:list[str]|None=None) -> Image.Image:
     """
     Create a bar plot to show the distribution of a binary, categorical, or ordinal variable
     If an order is provided, counts are shown in that order on the x-axis, otherwise alphabetical order is used.
     """
-    sns.barplot(data)
+    sns.barplot(data, name=name, order=order)
     return get_image()
-    # NOTE: the get_image function may be helpful here converting the current matplotlib plot to an image
 
 def count_categories(items: Iterable[K]) -> dict[K, int]:
     """Returns a dictionary mapping each unique item in items to the number of times it appears"""
