@@ -52,7 +52,8 @@ def make_barplot(data: Sequence[str], name:str|None=None, order:list[str]|None=N
     Create a bar plot to show the distribution of a binary, categorical, or ordinal variable
     If an order is provided, counts are shown in that order on the x-axis, otherwise alphabetical order is used.
     """
-    sns.barplot(data, name=name, order=order)
+    sns.barplot(data=count_categories(data),order=order)
+    if name: plt.xlabel(name)
     return get_image()
 
 def count_categories(items: Iterable[K]) -> dict[K, int]:

@@ -33,8 +33,8 @@
   },
   "cleaning": [
     {
-      "attribute": "tag",
-      "missing_strategy": "remove"
+      "attribute": "vote_average",
+      "missing_strategy": "replace_missing_with_mean"
     },
     {
       "attribute": "year",
@@ -45,25 +45,18 @@
       "missing_strategy": "replace_missing_with_median"
     }
   ],
-  "transforming": [
-    {
-      "action": "make_mean_bins",
-      "attribute": "views",
-      "args": ["freq", 5]
-    }
-  ],
   "plotting": [
     {
       "action": "make_density_plot",
-      "attribute": "views",
-      "name": "ViewsDensityPlot"
+      "attribute": "revenue",
+      "name": "RevenueDensityPlot"
     },
     {
       "action": "make_barplot",
-      "attribute": "tag",
-      "name": "TagHistogram",
+      "attribute": "revenue",
+      "name": "RevenueHistogram",
       "kwargs": {
-        "name": "Tags"
+        "name": "Revenuse"
       }
     }
   ]

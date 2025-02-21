@@ -29,14 +29,20 @@
     },
     {
       "attribute": "year",
-      "missing_strategy": "replace_missing_with_median"
+      "missing_strategy": "remove"
     },
     {
       "attribute": "views",
       "missing_strategy": "replace_missing_with_median"
     }
   ],
-  "transforming": [],
+  "transforming": [
+    {
+      "action": "make_mean_bins",
+      "attribute": "views",
+      "args": ["freq", 5]
+    }
+  ],
   "plotting": [
     {
       "action": "make_density_plot",

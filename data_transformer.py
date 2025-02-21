@@ -2,13 +2,12 @@ from collections import Counter
 import pandas as pd
 
 from statistics import mean, median, stdev
-from typing import  Sequence, Callable, Any
+from typing import Sequence, Callable, Any
 
 import os
 import sys
 scriptdir = os.path.abspath(os.path.dirname(__file__))
 if scriptdir not in sys.path: sys.path.append(scriptdir)
-from data_inspector import count_categories
 
 def transform_feature(df: pd.DataFrame, col_name: str, action: str, args: list[Any], kwargs: dict[str,Any]):
     """Transforms a single column of the dataframe using the specified modification
