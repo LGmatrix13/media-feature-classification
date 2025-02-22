@@ -90,12 +90,12 @@
     {
       "action": "make_mean_bins",
       "attribute": "revenue",
-      "args": ["freq", 10]
+      "args": ["freq", 5]
     },
     {
       "action": "make_mean_bins",
       "attribute": "budget",
-      "args": ["freq", 10]
+      "args": ["freq", 5]
     },
     {
       "action": "make_mean_bins",
@@ -105,32 +105,75 @@
   ],
   "plotting": [
     {
-      "action": "make_density_plot",
-      "attribute": "vote_average",
-      "name": "RevenueDensityPlot"
+      "action": "make_word_cloud",
+      "attribute": "title",
+      "name": "MoviesMovieTitleWordCloud"
     },
     {
       "action": "make_density_plot",
       "attribute": "vote_average",
-      "name": "VoteAverageDensityPlot"
+      "name": "MoviesVoteAverageDensity"
     },
     {
-      "action": "make_density_plot",
+      "action": "make_boxplot",
       "attribute": "vote_average",
-      "name": "VoteAverageDensity"
+      "name": "MoviesVoteBoxPlot"
     },
     {
       "action": "make_density_plot",
       "attribute": "vote_count",
-      "name": "VoteCountDensity"
+      "name": "MoviesVoteCountDensityPlot"
     },
     {
       "action": "make_barplot",
       "attribute": "status",
-      "name": "StatusHistogram",
+      "name": "MoviesStatusHistogram",
       "kwargs": {
         "name": "Status"
       }
+    },
+    {
+      "action": "make_word_cloud",
+      "attribute": "status",
+      "name": "MoviesStatusWordCloud"
+    },
+    {
+      "action": "make_density_plot",
+      "attribute": "revenue",
+      "name": "MoviesRevenueDensityPlot"
+    },
+    {
+      "action": "make_boxplot",
+      "attribute": "revenue",
+      "name": "MoviesRevenueBoxPlot"
+    },
+    {
+      "action": "make_density_plot",
+      "attribute": "runtime",
+      "name": "MoviesRuntimeDensityPlot"
+    },
+    {
+      "action": "make_barplot",
+      "attribute": "adult",
+      "name": "MoviesAdultHistogram",
+      "kwargs": {
+        "name": "Adult"
+      }
+    },
+    {
+      "action": "make_density_plot",
+      "attribute": "budget",
+      "name": "MoviesBudgetDensityPlot"
+    },
+    {
+      "action": "make_density_plot",
+      "attribute": "popularity",
+      "name": "MoviesPopularityDensityPlot"
+    },
+    {
+      "action": "make_boxplot",
+      "attribute": "popularity",
+      "name": "MoviesPopularityBoxPlot"
     }
   ]
 }

@@ -5,7 +5,7 @@ from typing import TypeVar, Iterable, Sequence, Hashable, NamedTuple, Any
 
 import pandas as pd
 from statistics import mean, median, mode, stdev
-
+from wordcloud import WordCloud
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
@@ -33,6 +33,7 @@ def make_plot(df: pd.DataFrame, col_name: str, action: str, args: list[Any], kwa
     if action == 'make_density_plot': plot = make_density_plot
     elif action == 'make_boxplot': plot = make_boxplot
     elif action == 'make_barplot': plot = make_barplot
+    elif action == 'make_word_cloud': plot = make_word_cloud
     else: raise ValueError(f"Unrecognized transformation action: {action}")
     # call that function with the provided arguments
     return plot(df[col_name], *args, **kwargs) # type: ignore
@@ -40,6 +41,17 @@ def make_plot(df: pd.DataFrame, col_name: str, action: str, args: list[Any], kwa
 def make_density_plot(data: Sequence[int|float]) -> Image.Image:
     """Create a density to show the distribution of a variable."""
     sns.kdeplot(data)
+    return get_image()
+
+def make_word_cloud(data: Sequence[str]) -> Image.Image:
+    """Create a work cloud to show the distribution of a variable."""
+    text = " ".join(data)  # Join words into a single string
+    wordcloud = WordCloud(width=800, height=400, background_color="white").generate(text)
+    
+    # Display the word cloud
+    plt.figure(figsize=(10, 5))
+    plt.imshow(wordcloud, interpolation="bilinear")
+    plt.axis("off")  # Hide axes
     return get_image()
 
 def make_boxplot(data: Sequence[int|float]) -> Image.Image:

@@ -93,10 +93,7 @@ def make_mean_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequ
     """Bins items using the specified cut strategy and represents each bin with its mean"""
     bins = _find_bins(items=items, cut=cut, bin_count=bin_count)
     bin_groups = defaultdict(list)
-    count = 0
     for item, bin in zip(items, bins):
-        print(f"bin {count}")
-        count += 1
         bin_groups[bin].append(item)
 
     bin_aggregates = {bin: mean(values) for bin, values in bin_groups.items()}

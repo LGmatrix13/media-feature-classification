@@ -52,38 +52,50 @@
     {
       "action": "make_mean_bins",
       "attribute": "views",
-      "args": ["freq", 5]
+      "args": ["freq", 10]
     }
   ],
   "plotting": [
     {
       "action": "make_density_plot",
       "attribute": "views",
-      "name": "ViewsDensityPlot"
+      "name": "MoviesViewsDensityPlot"
+    },
+    {
+      "action": "make_boxplot",
+      "attribute": "views",
+      "name": "MoviesViewsBoxPlot"
     },
     {
       "action": "make_barplot",
       "attribute": "tag",
-      "name": "TagHistogram",
+      "name": "MoviesTagHistogram",
       "kwargs": {
         "name": "Tags"
       }
     },
     {
       "action": "make_barplot",
-      "attribute": "views",
-      "name": "ViewsHistogram",
-      "kwargs": {
-        "name": "Views"
-      }
-    },
-    {
-      "action": "make_barplot",
       "attribute": "year",
-      "name": "YearHistorgram",
+      "name": "MusicYearHistorgram",
       "kwargs": {
         "name": "Year"
       }
+    },
+    {
+      "action": "make_word_cloud",
+      "attribute": "title",
+      "name": "MusicTitleWordCloud"
+    },
+    {
+      "action": "make_word_cloud",
+      "attribute": "tag",
+      "name": "MusicTagWordCloud"
+    },
+    {
+      "action": "make_word_cloud",
+      "attribute": "artist",
+      "name": "MusicArtistWordCloud"
     }
   ]
 }

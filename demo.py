@@ -38,7 +38,6 @@ def main(args: Namespace):
     df = df.rename(columns=col_renames)
     # fix missing vaules according to the attribute specifications
     for clean_step in config.clean_steps:
-        print("cleaning...")
         if clean_step.missing_strategy == 'remove':
             df = remove_missing(df, clean_step.attribute)
         elif clean_step.missing_strategy == 'fix_lists':
@@ -47,13 +46,11 @@ def main(args: Namespace):
             df = fix_missing(df, clean_step.attribute, clean_step.missing_strategy)
     # apply any transformations in order the are specified
     for ts in config.transform_steps:
-        print("transforming...")
         transform_feature(df, ts.attribute, ts.action, ts.args, ts.kwargs)
     # save the data at the determined location
     save_data(df, config.clean_dataset_path)
     # make all requested plots saving them in the plot directory
     for plot_step in config.plotting_steps:
-        print("plotting...")
         # create the requested plot image
         img = make_plot(df, plot_step.attribute, plot_step.action, plot_step.args, plot_step.kwargs)
         # save this image in the plots directory with the requested file name
