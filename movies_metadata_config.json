@@ -52,10 +52,6 @@
       "missing_strategy": "remove"
     },
     {
-      "attribute": "release_date",
-      "missing_strategy": "remove"
-    },
-    {
       "attribute": "vote_average",
       "missing_strategy": "replace_missing_with_mean"
     },
@@ -65,46 +61,75 @@
     },
     {
       "attribute": "revenue",
+      "missing_strategy": "replace_missing_with_mean"
+    },
+    {
+      "attribute": "runtime",
+      "missing_strategy": "replace_missing_with_mean"
+    },
+    {
+      "attribute": "budget",
+      "missing_strategy": "replace_missing_with_mean"
+    },
+    {
+      "attribute": "popularity",
       "missing_strategy": "replace_missing_with_mean"
     }
   ],
-  "transforming": [],
+  "transforming": [
+    {
+      "action": "make_mean_bins",
+      "attribute": "vote_count",
+      "args": ["freq", 5]
+    },
+    {
+      "action": "make_mean_bins",
+      "attribute": "vote_average",
+      "args": ["freq", 5]
+    },
+    {
+      "action": "make_mean_bins",
+      "attribute": "revenue",
+      "args": ["freq", 10]
+    },
+    {
+      "action": "make_mean_bins",
+      "attribute": "budget",
+      "args": ["freq", 10]
+    },
+    {
+      "action": "make_mean_bins",
+      "attribute": "popularity",
+      "args": ["freq", 5]
+    }
+  ],
   "plotting": [
     {
       "action": "make_density_plot",
-      "attribute": "revenue",
+      "attribute": "vote_average",
       "name": "RevenueDensityPlot"
     },
     {
-      "action": "make_barplot",
-      "attribute": "revenue",
-      "name": "RevenueHistogram",
-      "kwargs": {
-        "name": "Revenuse"
-      }
-    },
-    {
-      "action": "make_barplot",
+      "action": "make_density_plot",
       "attribute": "vote_average",
-      "name": "VoteAverageHistogram",
-      "kwargs": {
-        "name": "VoteAverage"
-      }
+      "name": "VoteAverageDensityPlot"
     },
     {
-      "action": "make_boxplot",
+      "action": "make_density_plot",
       "attribute": "vote_average",
-      "name": "VoteAverageHistogram",
-      "kwargs": {
-        "name": "VoteAverage"
-      }
+      "name": "VoteAverageDensity"
     },
     {
-      "action": "make_barplot",
+      "action": "make_density_plot",
       "attribute": "vote_count",
-      "name": "VoteCountHistogram",
+      "name": "VoteCountDensity"
+    },
+    {
+      "action": "make_barplot",
+      "attribute": "status",
+      "name": "StatusHistogram",
       "kwargs": {
-        "name": "VoteCount"
+        "name": "Status"
       }
     }
   ]

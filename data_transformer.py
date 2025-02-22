@@ -1,4 +1,4 @@
-from collections import Counter
+from collections import Counter, defaultdict
 import pandas as pd
 
 from statistics import mean, median, stdev
@@ -92,47 +92,44 @@ def make_named_bins(items: Sequence[int|float], cut: str, names: Sequence[str]):
 def make_mean_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int|float]:
     """Bins items using the specified cut strategy and represents each bin with its mean"""
     bins = _find_bins(items=items, cut=cut, bin_count=bin_count)
-    bin_groups = {}
+    bin_groups = defaultdict(list)
+    count = 0
     for item, bin in zip(items, bins):
-        if bin_groups.get(bin) is not None:
-            bin_groups[bin].append(item)
-        else:
-            bin_groups[bin] = [item]
+        print(f"bin {count}")
+        count += 1
+        bin_groups[bin].append(item)
 
-    return [mean(bin_groups[bin]) for bin in bins]
+    bin_aggregates = {bin: mean(values) for bin, values in bin_groups.items()}
+    return [bin_aggregates[bin] for bin in bins]
 
 def make_median_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int|float]:
     """Bins items using the specified cut strategy and represents each bin with its median"""
     bins = _find_bins(items=items, cut=cut, bin_count=bin_count)
-    bin_groups = {}
+    bin_groups = defaultdict(list)
     for item, bin in zip(items, bins):
-        if bin_groups.get(bin) is not None:
-            bin_groups[bin].append(item)
-        else:
-            bin_groups[bin] = [item]
-    return [median(bin_groups[bin]) for bin in bins]
+        bin_groups[bin].append(item)
+    bin_aggregates = {bin: median(values) for bin, values in bin_groups.items()}
+    return [bin_aggregates[bin] for bin in bins]
 
 def make_min_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int|float]:
     """Bins items using the specified cut strategy and represents each bin with its minimum value"""
     bins = _find_bins(items=items, cut=cut, bin_count=bin_count)
-    bin_groups = {}
+    bin_groups = defaultdict(list)
     for item, bin in zip(items, bins):
-        if bin_groups.get(bin) is not None:
-            bin_groups[bin].append(item)
-        else:
-            bin_groups[bin] = [item]
-    return [min(bin_groups[bin]) for bin in bins]
+        bin_groups[bin].append(item)
+    bin_aggregates = {bin: min(values) for bin, values in bin_groups.items()}
+    return [bin_aggregates[bin] for bin in bins]
+
 
 def make_max_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int|float]:
     """Bins items using the specified cut strategy and represents each bin with its maximum value"""
     bins = _find_bins(items=items, cut=cut, bin_count=bin_count)
-    bin_groups = {}
+    bin_groups = defaultdict(list)
     for item, bin in zip(items, bins):
-        if bin_groups.get(bin) is not None:
-            bin_groups[bin].append(item)
-        else:
-            bin_groups[bin] = [item]
-    return [max(bin_groups[bin]) for bin in bins]
+        bin_groups[bin].append(item)
+
+    bin_aggregates = {bin: max(values) for bin, values in bin_groups.items()}
+    return [bin_aggregates[bin] for bin in bins]
 
 def _find_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int]:
     """Bins the items and returns a sequence of bin numbers in the range [0,bin_count)"""

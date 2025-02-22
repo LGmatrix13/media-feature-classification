@@ -50,4 +50,4 @@ def chunk_music():
     lyrics.to_parquet('./data/raw/music_lyrics_metadata.parquet')
 
 if __name__ == "__main__":
-    chunk_movies()
+    chunk_music()

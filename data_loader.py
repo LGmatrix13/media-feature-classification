@@ -1,4 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor
 import pandas as pd
 from numpy.typing import DTypeLike
 import numpy as ny
@@ -18,7 +17,7 @@ def load_data(path: str, columns: dict[str,DTypeLike], missing: dict[str,set[str
         df[name].astype(type)
     
     for name, values in missing.items():
-        df[df[name].isin(values)] = None
+        df[df[name].isin(values)] = ny.nan
     
     return df
     

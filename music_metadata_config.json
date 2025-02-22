@@ -1,6 +1,6 @@
 {
-  "raw_dataset_path": "./data/raw/music_metadata.parquet",
-  "clean_dataset_path": "./data/cleaned/music_metadata.parquet",
+  "raw_dataset_path": "./data/raw/music_metadata_subset.parquet",
+  "clean_dataset_path": "./data/cleaned/music_metadata_subset.parquet",
   "plot_directory_path": "plots",
   "attributes": {
     "title": {
@@ -24,6 +24,10 @@
   },
   "cleaning": [
     {
+      "attribute": "id",
+      "missing_strategy": "remove"
+    },
+    {
       "attribute": "title",
       "missing_strategy": "remove"
     },
@@ -38,9 +42,19 @@
     {
       "attribute": "views",
       "missing_strategy": "replace_missing_with_median"
+    },
+    {
+      "attribute": "features",
+      "missing_strategy": "fix_lists"
     }
   ],
-  "transforming": [],
+  "transforming": [
+    {
+      "action": "make_mean_bins",
+      "attribute": "views",
+      "args": ["freq", 5]
+    }
+  ],
   "plotting": [
     {
       "action": "make_density_plot",
@@ -61,6 +75,14 @@
       "name": "ViewsHistogram",
       "kwargs": {
         "name": "Views"
+      }
+    },
+    {
+      "action": "make_barplot",
+      "attribute": "year",
+      "name": "YearHistorgram",
+      "kwargs": {
+        "name": "Year"
       }
     }
   ]

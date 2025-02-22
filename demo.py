@@ -17,7 +17,7 @@ sys.path.append(scriptdir)
 
 # load all the necessary functions for this package
 from data_loader import load_data, save_data
-from data_cleaner import remove_missing, fix_missing
+from data_cleaner import remove_missing, fix_missing, fix_lists
 from data_transformer import transform_feature
 from data_inspector import make_plot
 
@@ -41,6 +41,8 @@ def main(args: Namespace):
         print("cleaning...")
         if clean_step.missing_strategy == 'remove':
             df = remove_missing(df, clean_step.attribute)
+        elif clean_step.missing_strategy == 'fix_lists':
+            df = fix_lists(df, clean_step.attribute)
         else:
             df = fix_missing(df, clean_step.attribute, clean_step.missing_strategy)
     # apply any transformations in order the are specified
