@@ -1,6 +1,6 @@
 {
-  "raw_dataset_path": "./data/raw/music_metadata_subset.parquet",
-  "clean_dataset_path": "./data/cleaned/music_metadata_subset.parquet",
+  "raw_dataset_path": "./data/raw/music_metadata.parquet",
+  "clean_dataset_path": "./data/cleaned/music_metadata.parquet",
   "plot_directory_path": "plots",
   "attributes": {
     "title": {
@@ -59,17 +59,17 @@
     {
       "action": "make_density_plot",
       "attribute": "views",
-      "name": "MoviesViewsDensityPlot"
+      "name": "MusicViewsDensityPlot"
     },
     {
       "action": "make_boxplot",
       "attribute": "views",
-      "name": "MoviesViewsBoxPlot"
+      "name": "MusicViewsBoxPlot"
     },
     {
       "action": "make_barplot",
       "attribute": "tag",
-      "name": "MoviesTagHistogram",
+      "name": "MusicTagHistogram",
       "kwargs": {
         "name": "Tags"
       }
