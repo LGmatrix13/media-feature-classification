@@ -1,0 +1,9 @@
+{
+  "raw_dataset_path": "./data/raw/books_metadata.parquet",
+  "clean_dataset_path": "./data/cleaned/books_metadataparquet",
+  "plot_directory_path": "plots",
+  "attributes": {},
+  "cleaning": [],
+  "transforming": [],
+  "plotting": []
+}
