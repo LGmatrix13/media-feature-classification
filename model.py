@@ -3,9 +3,11 @@ import nltk
 import pandas as pd
 import numpy as np
 from nltk.tokenize import word_tokenize
-from sklearn.neighbors import KNeighborsClassifier, NearestNeighbors
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.neighbors import KNeighborsClassifier
+
+def _calculate_cosine_similarity(args: tuple):
+    chunk, embedding = args
+    return np.dot(chunk, embedding) / (np.linalg.norm(chunk, axis=1) * np.linalg.norm(embedding))
 
 def load_data():
     try:
@@ -30,42 +32,30 @@ def embed(paratext: str, model) -> np.ndarray:
     vectors = [model[word] for word in words if word in model]
     return np.mean(vectors, axis=0) if vectors else np.zeros(300)  # Handle empty cases
 
-# Optimized filtering using NumPy (Parallelized)
-def filter_chunk(df_chunk: pd.DataFrame, embedding: np.ndarray) -> pd.DataFrame:
-    print(f"Filtering chunk of size {len(df_chunk)}...")
-    df_chunk = df_chunk[~df_chunk["vector"].isnull()]
-    vectors = np.vstack(df_chunk["vector"].values)
-    norms = np.linalg.norm(vectors, axis=1) * np.linalg.norm(embedding)
-    cosine_similarities = np.dot(vectors, embedding) / norms
-    del vectors
-    df_chunk["cosine_similarity"] = cosine_similarities
-    return df_chunk.nlargest(3334, "cosine_similarity")[["id", "vector", "cosine_similarity"]]  # Approx 1/3 of 10000
-
 # Optimized filtering using NumPy
 # Parallelized filtering using NumPy
 def filter_parallel(df_vectors: pd.DataFrame, embedding: np.ndarray) -> pd.DataFrame:
-    print("Filtering data...")
-    
-    df_vectors = df_vectors[~df_vectors["vector"].isnull()]
+    from concurrent.futures import ProcessPoolExecutor
 
+    print("Filtering data...")
+    df_vectors = df_vectors[~df_vectors["vector"].isnull()]
     vectors = np.vstack(df_vectors["vector"].values)
-    
     chunk_size = len(vectors) // 3
     chunks = [vectors[i:i + chunk_size] for i in range(0, len(vectors), chunk_size)]
-
-    from concurrent.futures import ProcessPoolExecutor
+    
     with ProcessPoolExecutor() as executor:
-        results = list(executor.map(lambda chunk: np.dot(chunk, embedding) / (np.linalg.norm(chunk, axis=1) * np.linalg.norm(embedding)), chunks))
+        results = list(executor.map(_calculate_cosine_similarity, (chunks, embedding)))
 
     cosine_similarities = np.concatenate(results)
-
-    df_vectors.loc[df_vectors.index, "cosine_similarity"] = cosine_similarities
-
-    # Return the top 10,000 rows based on cosine similarity
-    return df_vectors.nlargest(10000, "cosine_similarity")[["id", "vector", "cosine_similarity"]]
+    df_vectors.loc[df_vectors.index, 'cosine_similarity'] = cosine_similarities
+    return df_vectors.nlargest(10000, 'cosine_similarity')[['id', 'vector', 'cosine_similarity']]
 
 # Train KNN and NN
 def train(df_vectors: pd.DataFrame, df_metadata: pd.DataFrame) -> tuple[KNeighborsClassifier, list]:
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import accuracy_score
+
     print("Training model...")
     merged = df_vectors.merge(df_metadata, on="id")
     X = np.vstack(merged['vector'])
@@ -93,7 +83,7 @@ def main():
     query = input("Query: ")
     embedding = embed(query, model)
     del model
-    filtered_df = filter(df_vectors, embedding)  # Parallel filtering
+    filtered_df = filter_parallel(df_vectors, embedding)  # Parallel filtering
     del df_vectors
     trained_model, X_train = train(filtered_df, df_metadata)
     del df_metadata
