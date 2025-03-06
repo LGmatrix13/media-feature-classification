@@ -79,7 +79,7 @@ def main():
     del df_metadata
     del filtered_df
     result = report(trained_model, X_train, embedding)
-    print("Predicted Tag:", result)
+    print("Predicted Adult:", result)
 
 if __name__ == "__main__":
     main()
