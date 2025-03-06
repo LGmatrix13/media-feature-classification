@@ -5,10 +5,6 @@ import numpy as np
 from nltk.tokenize import word_tokenize
 from sklearn.neighbors import KNeighborsClassifier
 
-def _calculate_cosine_similarity(args: tuple):
-    chunk, embedding = args
-    return np.dot(chunk, embedding) / (np.linalg.norm(chunk, axis=1) * np.linalg.norm(embedding))
-
 def load_data():
     try:
         print("Loading cached data...")
@@ -34,21 +30,15 @@ def embed(paratext: str, model) -> np.ndarray:
 
 # Optimized filtering using NumPy
 # Parallelized filtering using NumPy
-def filter_parallel(df_vectors: pd.DataFrame, embedding: np.ndarray) -> pd.DataFrame:
-    from concurrent.futures import ProcessPoolExecutor
-
+def filter(df_vectors: pd.DataFrame, embedding: np.ndarray) -> pd.DataFrame:
     print("Filtering data...")
     df_vectors = df_vectors[~df_vectors["vector"].isnull()]
     vectors = np.vstack(df_vectors["vector"].values)
-    chunk_size = len(vectors) // 3
-    chunks = [vectors[i:i + chunk_size] for i in range(0, len(vectors), chunk_size)]
-    
-    with ProcessPoolExecutor() as executor:
-        results = list(executor.map(_calculate_cosine_similarity, (chunks, embedding)))
-
-    cosine_similarities = np.concatenate(results)
-    df_vectors.loc[df_vectors.index, 'cosine_similarity'] = cosine_similarities
-    return df_vectors.nlargest(10000, 'cosine_similarity')[['id', 'vector', 'cosine_similarity']]
+    norms = np.linalg.norm(vectors, axis=1) * np.linalg.norm(embedding)
+    cosine_similarities = np.dot(vectors, embedding) / norms
+    del vectors
+    df_vectors.loc[df_vectors.index, "cosine_similarity"] = cosine_similarities
+    return df_vectors.nlargest(10000, "cosine_similarity")[["id", "vector", "cosine_similarity"]]
 
 # Train KNN and NN
 def train(df_vectors: pd.DataFrame, df_metadata: pd.DataFrame) -> tuple[KNeighborsClassifier, list]:
@@ -83,7 +73,7 @@ def main():
     query = input("Query: ")
     embedding = embed(query, model)
     del model
-    filtered_df = filter_parallel(df_vectors, embedding)  # Parallel filtering
+    filtered_df = filter(df_vectors, embedding)  # Parallel filtering
     del df_vectors
     trained_model, X_train = train(filtered_df, df_metadata)
     del df_metadata
