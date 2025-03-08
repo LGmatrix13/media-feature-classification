@@ -8,7 +8,6 @@ import seaborn as sns
 from nltk.tokenize import word_tokenize
 from sklearn.metrics import accuracy_score
 from sklearn.cluster import DBSCAN
-from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
@@ -38,8 +37,8 @@ def train_svm(df_vectors: pd.DataFrame, df_metadata: pd.DataFrame, feature: str,
     print("Training SVM model...")
     df_vectors = df_vectors[~df_vectors["vector"].isnull()].sample(n=100000)
     merged = df_vectors.merge(df_metadata, on="id")
-    X = np.vstack(merged[feature])
-    y = merged[feature].valuess
+    X = np.vstack(merged['vector'])
+    y = merged[feature].values
     del merged
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     svm = SVC(kernel='linear', probability=True, random_state=42)
@@ -47,22 +46,20 @@ def train_svm(df_vectors: pd.DataFrame, df_metadata: pd.DataFrame, feature: str,
     
     y_pred = svm.predict(X_test)
     if verbose: print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
-    if verbose: _visualize_clusters(X, y)   
     return svm
 
 def train_knn(df_vectors: pd.DataFrame, df_metadata: pd.DataFrame, feature: str, verbose: bool = True) -> tuple[KNeighborsClassifier, list]:
     if verbose: print("Training model...")
     df_vectors = df_vectors[~df_vectors["vector"].isnull()].sample(n=100000)
     merged = df_vectors.merge(df_metadata, on="id")
-    X = np.vstack(merged[feature])
-    y = merged[feature].valuess
+    X = np.vstack(merged['vector'])
+    y = merged[feature].values
     del merged
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     knn = KNeighborsClassifier(n_neighbors=20, n_jobs=-1)   
     knn.fit(X_train, y_train)   
     y_pred = knn.predict(X_test)
     if verbose: print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")  
-    if verbose: _visualize_clusters(X, y)   
     return knn
 
 # Report results
@@ -75,24 +72,6 @@ def report(model, df_metadata: pd.DataFrame, embedding: np.ndarray, feature: str
     #    print(f"{music['title']}, {music[feature]}")  # Or any other column from df_metadata
 
     print(f"Prediction for {feature}: {model.predict([embedding])[0]}")
-
-def _visualize_clusters(X, labels):
-    print("Visualizing clusters with t-SNE...")
-    tsne = TSNE(n_components=2, perplexity=30, random_state=42)
-    X_2d = tsne.fit_transform(X)
-    
-    plt.figure(figsize=(10, 6))
-    unique_labels = set(labels)
-    colors = sns.color_palette("hsv", len(unique_labels))
-    
-    for label, _ in zip(unique_labels, colors):
-        plt.scatter(X_2d[labels == label, 0], X_2d[labels == label, 1], label=f"Class {label}", alpha=0.6, edgecolors='k')
-    
-    plt.legend()
-    plt.title("t-SNE Visualization of SVM Classifications")
-    plt.xlabel("t-SNE Component 1")
-    plt.ylabel("t-SNE Component 2")
-    plt.show()
 
 # Main function
 def main():
