@@ -9,7 +9,7 @@ FREETEXT_COLUMN = "overview"  # Make sure this column exists in your dataset
 DB_NAME = "./data/vectors/movies_vectors.db"
 TABLE_NAME = "embeddings"
 
-model = SentenceTransformer("nomic-ai/nomic-embed-text-v1", trust_remote_code=True)
+model = SentenceTransformer("nomic-ai/nomic-embed-text-v1", trust_remote_code=True, device="cuda")
 
 def create_table():
     """Creates the SQLite table if it does not exist."""
