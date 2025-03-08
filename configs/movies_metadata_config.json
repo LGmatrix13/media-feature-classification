@@ -88,14 +88,13 @@
       "args": ["freq", 5]
     },
     {
-      "action": "make_mean_bins",
+      "action": "z_score_norm",
       "attribute": "revenue",
       "args": ["freq", 5]
     },
     {
-      "action": "make_mean_bins",
-      "attribute": "budget",
-      "args": ["freq", 5]
+      "action": "z_score_norm",
+      "attribute": "budget"
     },
     {
       "action": "make_mean_bins",

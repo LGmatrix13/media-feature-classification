@@ -42,10 +42,6 @@
     {
       "attribute": "views",
       "missing_strategy": "replace_missing_with_median"
-    },
-    {
-      "attribute": "features",
-      "missing_strategy": "fix_lists"
     }
   ],
   "transforming": [
