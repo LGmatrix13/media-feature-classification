@@ -3,6 +3,9 @@
   "clean_dataset_path": "./data/cleaned/movies_metadata.parquet",
   "plot_directory_path": "plots",
   "attributes": {
+    "id": {
+      "type": "nominal"
+    },
     "title": {
       "type": "nominal"
     },
@@ -33,47 +36,71 @@
     "popularity": {
       "type": "real"
     },
-    "genres": {
+    "tagline": {
       "type": "nominal"
     },
-    "production_companies": {
+    "keyword_1": {
       "type": "nominal"
     },
-    "production_countries": {
+    "keyword_2": {
       "type": "nominal"
     },
-    "keywords": {
+    "keyword_3": {
       "type": "nominal"
+    },
+    "keyword_4": {
+      "type": "nominal"
+    },
+    "genre_1": {
+      "type": "nominal"
+    },
+    "genre_2": {
+      "type": "nominal"
+    },
+    "genre_3": {
+      "type": "nominal"
+    },
+    "genre_4": {
+      "type": "nominal"
+    },
+    "production_company_1": {
+      "type": "nominal"
+    },
+    "production_company_2": {
+      "type": "nominal"
+    },
+    "production_company_3": {
+      "type": "nominal"
+    },
+    "production_company_4": {
+      "type": "nominal"
+    },
+    "production_country_1": {
+      "type": "nominal"
+    },
+    "production_country_2": {
+      "type": "nominal"
+    },
+    "production_country_3": {
+      "type": "nominal"
+    },
+    "total_keywords": {
+      "type": "real"
+    },
+    "total_genre": {
+      "type": "real"
+    },
+    "total_production_company": {
+      "type": "real"
+    },
+    "total_production_country": {
+      "type": "real"
     }
   },
   "cleaning": [
     {
       "attribute": "title",
       "missing_strategy": "remove"
-    },
-    {
-      "attribute": "vote_average",
-      "missing_strategy": "replace_missing_with_mean"
-    },
-    {
-      "attribute": "vote_count",
-      "missing_strategy": "replace_missing_with_mean"
-    },
-    {
-      "attribute": "revenue",
-      "missing_strategy": "replace_missing_with_mean"
-    },
-    {
-      "attribute": "runtime",
-      "missing_strategy": "replace_missing_with_mean"
-    },
-    {
-      "attribute": "budget",
-      "missing_strategy": "replace_missing_with_mean"
-    },
-    {
-      "attribute": "popularity",
-      "missing_strategy": "replace_missing_with_mean"
     }
   ],
   "transforming": [
@@ -88,18 +115,18 @@
       "args": ["freq", 5]
     },
     {
-      "action": "z_score_norm",
+      "action": "make_mean_bins",
       "attribute": "revenue",
       "args": ["freq", 5]
     },
     {
-      "action": "z_score_norm",
-      "attribute": "budget"
+      "action": "make_mean_bins",
+      "attribute": "budget",
+      "args": ["freq", 5]
     },
     {
-      "action": "make_mean_bins",
-      "attribute": "popularity",
-      "args": ["freq", 5]
+      "action": "z_score_norm",
+      "attribute": "popularity"
     }
   ],
   "plotting": [

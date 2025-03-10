@@ -2,8 +2,137 @@
   "raw_dataset_path": "./data/raw/books_metadata.parquet",
   "clean_dataset_path": "./data/cleaned/books_metadataparquet",
   "plot_directory_path": "plots",
-  "attributes": {},
-  "cleaning": [],
-  "transforming": [],
-  "plotting": []
+  "attributes": {
+    "id": {
+      "type": "nominal"
+    },
+    "name": {
+      "type": "nominal"
+    },
+    "one_star": {
+      "type": "real"
+    },
+    "four_stars": {
+      "type": "real"
+    },
+    "total_num_ratings": {
+      "type": "real"
+    },
+    "publish_month": {
+      "type": "real"
+    },
+    "publish_day": {
+      "type": "real"
+    },
+    "publisher": {
+      "type": "nominal"
+    },
+    "counts_of_review": {
+      "type": "real"
+    },
+    "publish_year": {
+      "type": "real"
+    },
+    "rating": {
+      "type": "real"
+    },
+    "two_stars": {
+      "type": "real"
+    },
+    "five_stars": {
+      "type": "real"
+    },
+    "three_stars": {
+      "type": "real"
+    },
+    "count_of_text_reviews": {
+      "type": "real"
+    },
+    "pages": {
+      "type": "real"
+    },
+    "author_1": {
+      "type": "nominal"
+    },
+    "author_2": {
+      "type": "nominal"
+    },
+    "total_authors": {
+      "type": "real"
+    }
+  },
+  "cleaning": [
+    {
+      "attribute": "one_star",
+      "missing_strategy": "replace_missing_with_mean"
+    },
+    {
+      "attribute": "four_stars",
+      "missing_strategy": "replace_missing_with_mean"
+    },
+    {
+      "attribute": "two_stars",
+      "missing_strategy": "replace_missing_with_mean"
+    },
+    {
+      "attribute": "five_stars",
+      "missing_strategy": "replace_missing_with_mean"
+    },
+    {
+      "attribute": "three_stars",
+      "missing_strategy": "replace_missing_with_mean"
+    },
+    {
+      "attribute": "count_of_text_reviews",
+      "missing_strategy": "replace_missing_with_mean"
+    }
+  ],
+  "transforming": [
+    {
+      "action": "z_score_norm",
+      "attribute": "one_star"
+    },
+    {
+      "action": "z_score_norm",
+      "attribute": "two_stars"
+    },
+    {
+      "action": "z_score_norm",
+      "attribute": "three_stars"
+    },
+    {
+      "action": "z_score_norm",
+      "attribute": "four_stars"
+    },
+    {
+      "action": "make_mean_bins",
+      "attribute": "count_of_text_reviews",
+      "args": ["freq", 7]
+    },
+    {
+      "action": "make_mean_bins",
+      "attribute": "rating",
+      "args": ["freq", 7]
+    }
+  ],
+  "plotting": [
+    {
+      "action": "make_word_cloud",
+      "attribute": "name",
+      "name": "BooksNameWordCloud"
+    },
+    {
+      "action": "make_density_plot",
+      "attribute": "rating",
+      "name": "BooksRatingDensity"
+    },
+    {
+      "action": "make_barplot",
+      "attribute": "publish_year",
+      "name": "BooksPublishYearHistogram",
+      "kwargs": {
+        "name": "Publish Year"
+      }
+    }
+  ]
 }

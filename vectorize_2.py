@@ -4,12 +4,12 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 TYPE = "classification"
-FILE = "./data/raw/movies_overview.parquet"
-FREETEXT_COLUMN = "overview"  # Make sure this column exists in your dataset
-DB_NAME = "./data/vectors/movies_vectors.db"
+FILE = "./data/raw/books_descriptions.parquet"
+FREETEXT_COLUMN = "description"  # Make sure this column exists in your dataset
+DB_NAME = "./data/vectors/books_vectors.db"
 TABLE_NAME = "embeddings"
 
-model = SentenceTransformer("nomic-ai/nomic-embed-text-v1", trust_remote_code=True, device="cuda")
+model = SentenceTransformer("nomic-ai/nomic-embed-text-v1", trust_remote_code=True)
 
 def create_table():
     """Creates the SQLite table if it does not exist."""

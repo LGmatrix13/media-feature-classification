@@ -3,6 +3,9 @@
   "clean_dataset_path": "./data/cleaned/music_metadata.parquet",
   "plot_directory_path": "plots",
   "attributes": {
+    "id": {
+      "type": "nominal"
+    },
     "title": {
       "type": "nominal"
     },
@@ -18,37 +21,27 @@
     "views": {
       "type": "real"
     },
-    "features": {
+    "feature_1": {
+      "type": "nominal"
+    },
+    "feature_2": {
+      "type": "nominal"
+    },
+    "feature_3": {
       "type": "nominal"
     }
   },
   "cleaning": [
     {
-      "attribute": "id",
-      "missing_strategy": "remove"
-    },
-    {
       "attribute": "title",
       "missing_strategy": "remove"
-    },
-    {
-      "attribute": "tag",
-      "missing_strategy": "remove"
-    },
-    {
-      "attribute": "year",
-      "missing_strategy": "remove"
-    },
-    {
-      "attribute": "views",
-      "missing_strategy": "replace_missing_with_median"
     }
   ],
   "transforming": [
     {
       "action": "make_mean_bins",
       "attribute": "views",
-      "args": ["freq", 10]
+      "args": ["freq", 7]
     }
   ],
   "plotting": [
