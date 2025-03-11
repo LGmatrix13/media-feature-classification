@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 
-def main(df: pd.DataFrame):
+def preprocess(df: pd.DataFrame):
     df = df[df['views'] > df['views'].quantile(0.6)]
     for i in range(1, 25):
         df.loc[df['year'] == i, 'year'] = int(f"200{i}") if i < 10 else int(f"20{i}")
