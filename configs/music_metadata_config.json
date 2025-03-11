@@ -1,6 +1,7 @@
 {
   "raw_dataset_path": "./data/raw/music_metadata.parquet",
-  "clean_dataset_path": "./data/cleaned/music_metadata.parquet",
+  "clean_dataset_path": "./data/transformed/music_metadata.parquet",
+  "preprocess_script_path": "preprocess_music",
   "plot_directory_path": "plots",
   "attributes": {
     "id": {

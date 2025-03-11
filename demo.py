@@ -4,6 +4,7 @@ from __future__ import annotations
 import pandas as pd
 import numpy as np
 from numpy.typing import DTypeLike
+import importlib
 
 import json
 from typing import Any, NamedTuple
@@ -17,7 +18,7 @@ sys.path.append(scriptdir)
 
 # load all the necessary functions for this package
 from data_loader import load_data, save_data
-from data_cleaner import remove_missing, fix_missing, fix_lists
+from data_cleaner import remove_missing, fix_missing
 from data_transformer import transform_feature
 from data_inspector import make_plot
 
@@ -30,7 +31,12 @@ def main(args: Namespace):
     missing: dict[str,set[str]] = {attr_name:set(attr_config.missing_values) \
             for attr_name,attr_config in config.attributes.items() \
                 if attr_config.missing_values is not None}
-    df: pd.DataFrame = load_data(config.raw_dataset_path, columns=dtypes, missing=missing)
+    preprocessor = None
+    if config.preprocess_script_path is not None:
+        preprocessor = importlib.import_module(config.preprocess_script_path)
+    df: pd.DataFrame = load_data(config.raw_dataset_path, columns=dtypes, missing=missing, preprocessor=preprocessor)
+    
+   
     # rename any attributes with the rename attribute
     col_renames = {attr_name:attr_config.rename \
                         for attr_name,attr_config in config.attributes.items() \
@@ -40,10 +46,8 @@ def main(args: Namespace):
     for clean_step in config.clean_steps:
         if clean_step.missing_strategy == 'remove':
             df = remove_missing(df, clean_step.attribute)
-        elif clean_step.missing_strategy == 'fix_lists':
-            df = fix_lists(df, clean_step.attribute)
         else:
-            df = fix_missing(df, clean_step.attribute, clean_step.missing_strategy)
+            df = fix_missing(df, clean_step.attribute, clean_step.missing_strategy, clean_step.args)
     # apply any transformations in order the are specified
     for ts in config.transform_steps:
         transform_feature(df, ts.attribute, ts.action, ts.args, ts.kwargs)
@@ -57,6 +61,7 @@ def main(args: Namespace):
         img.save(os.path.join(config.plot_directory_path, f"{plot_step.name}.png"))
 
 class Config(NamedTuple):
+    preprocess_script_path: str
     raw_dataset_path: str
     clean_dataset_path: str
     plot_directory_path: str
@@ -67,6 +72,7 @@ class Config(NamedTuple):
     @staticmethod
     def parse(d: dict[str,Any]) -> Config:
         return Config(
+            str(d.get('preprocess_script_path')),
             str(d['raw_dataset_path']),
             str(d['clean_dataset_path']),
             str(d['plot_directory_path']),
@@ -91,11 +97,13 @@ class AttributeConfig(NamedTuple):
 class CleanConfig(NamedTuple):
     attribute: str
     missing_strategy: str
+    args: list[Any]
     @staticmethod
     def parse(d: dict[str,Any]) -> CleanConfig:
         return CleanConfig(
             d['attribute'],
-            d['missing_strategy']
+            d['missing_strategy'],
+            d.get('args')
         )
 
 class TransformConfig(NamedTuple):

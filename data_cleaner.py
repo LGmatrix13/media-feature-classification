@@ -3,7 +3,7 @@ from typing import Iterable, Any
 from statistics import mode
 import numpy as np
 
-def fix_missing(df: pd.DataFrame, col_name: str, strategy: str) -> pd.DataFrame:
+def fix_missing(df: pd.DataFrame, col_name: str, strategy: str, args: list[any]) -> pd.DataFrame:
     """Fixes the missing values in a single column using the specified strategy function.
     
     Positional Arguments:
@@ -20,9 +20,10 @@ def fix_missing(df: pd.DataFrame, col_name: str, strategy: str) -> pd.DataFrame:
     if strategy == 'replace_missing_with_mode': f = replace_missing_with_mode
     elif strategy == 'replace_missing_with_mean': f = replace_missing_with_mean
     elif strategy == 'replace_missing_with_median': f = replace_missing_with_median
+    elif strategy == 'replace_missing_with_value': f = replace_missing_with_value
     else: raise ValueError(f"Unrecognized missing replacement strategy: {strategy}")
     # call that function and return the resulting DataFrame
-    df[col_name] = f(df, col_name)
+    df[col_name] = f(df, col_name, *args if args is not None else [])
     return df
 
 def remove_missing(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
@@ -36,10 +37,6 @@ def remove_missing(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
     """
 
     df.dropna(subset=[col_name], inplace=True)
-    return df
-
-def fix_lists(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
-    df[col_name] = df[col_name].apply(lambda row: row.strip("{}").replace('"', '').split(', '))
     return df
 
 def replace_missing_with_value(df: pd.DataFrame, col_name: str, value: Any) -> Iterable[Any]:

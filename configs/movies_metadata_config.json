@@ -1,6 +1,7 @@
 {
   "raw_dataset_path": "./data/raw/movies_metadata.parquet",
-  "clean_dataset_path": "./data/cleaned/movies_metadata.parquet",
+  "clean_dataset_path": "./data/transformed/movies_metadata.parquet",
+  "preprocess_script_path": "preprocess_movies",
   "plot_directory_path": "plots",
   "attributes": {
     "id": {
@@ -107,22 +108,22 @@
     {
       "action": "make_mean_bins",
       "attribute": "vote_count",
-      "args": ["freq", 5]
+      "args": ["freq", 7]
     },
     {
       "action": "make_mean_bins",
       "attribute": "vote_average",
-      "args": ["freq", 5]
+      "args": ["freq", 7]
     },
     {
       "action": "make_mean_bins",
       "attribute": "revenue",
-      "args": ["freq", 5]
+      "args": ["freq", 7]
     },
     {
       "action": "make_mean_bins",
       "attribute": "budget",
-      "args": ["freq", 5]
+      "args": ["freq", 7]
     },
     {
       "action": "z_score_norm",

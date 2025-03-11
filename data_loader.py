@@ -1,8 +1,9 @@
 import pandas as pd
 from numpy.typing import DTypeLike
 import numpy as ny
+from collections.abc import Callable
 
-def load_data(path: str, columns: dict[str,DTypeLike], missing: dict[str,set[str]]) -> pd.DataFrame:
+def load_data(path: str, columns: dict[str,DTypeLike], missing: dict[str,set[str]], preprocessor: Callable[[pd.DataFrame], pd.DataFrame] | None) -> pd.DataFrame:
     """Loads the raw dataset from files using parameters from the config file.
     
     Positional Arguments:
@@ -13,6 +14,9 @@ def load_data(path: str, columns: dict[str,DTypeLike], missing: dict[str,set[str
     returns a DataFrame loaded from the filepath given with the specified columns and types
     """
     df = pd.read_parquet(path)
+    if preprocessor is not None:
+        df = preprocessor.preprocess(df=df)
+
     for name, type in columns.items():
         df[name].astype(type)
     

@@ -1,7 +1,8 @@
 {
   "raw_dataset_path": "./data/raw/books_metadata.parquet",
-  "clean_dataset_path": "./data/cleaned/books_metadataparquet",
+  "clean_dataset_path": "./data/transformed/books_metadata.parquet",
   "plot_directory_path": "plots",
+  "preprocess_script_path": "preprocess_books",
   "attributes": {
     "id": {
       "type": "nominal"
@@ -64,27 +65,32 @@
   "cleaning": [
     {
       "attribute": "one_star",
-      "missing_strategy": "replace_missing_with_mean"
-    },
-    {
-      "attribute": "four_stars",
-      "missing_strategy": "replace_missing_with_mean"
+      "missing_strategy": "replace_missing_with_value",
+      "args": [0]
     },
     {
       "attribute": "two_stars",
-      "missing_strategy": "replace_missing_with_mean"
+      "missing_strategy": "replace_missing_with_value",
+      "args": [0]
+    },
+    {
+      "attribute": "three_stars",
+      "missing_strategy": "replace_missing_with_value",
+      "args": [0]
+    },
+    {
+      "attribute": "four_stars",
+      "missing_strategy": "replace_missing_with_value",
+      "args": [0]
     },
     {
       "attribute": "five_stars",
       "missing_strategy": "replace_missing_with_mean"
     },
     {
-      "attribute": "three_stars",
-      "missing_strategy": "replace_missing_with_mean"
-    },
-    {
       "attribute": "count_of_text_reviews",
-      "missing_strategy": "replace_missing_with_mean"
+      "missing_strategy": "replace_missing_with_value",
+      "args": [0]
     }
   ],
   "transforming": [
