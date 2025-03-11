@@ -1,4 +1,6 @@
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 def chunk_movies():
     chunksize = 10 ** 5
@@ -32,22 +34,51 @@ def chunk_movies():
     overview.to_parquet('./data/raw/movies_overview.parquet')
 
 def chunk_music():
-    chunksize = 10 ** 6
-    chunk_idx = 0
-    metadata = pd.DataFrame()
-    lyrics = pd.DataFrame()
+    chunksize = 10**6
+    lyrics_path = "./data/raw/music_lyrics.parquet"
+    metadata_path = "./data/raw/music_metadata.parquet"
+    lyrics_writer = None
+    metadata_writer = None
 
-    for chunk in pd.read_csv('./data/raw/music.csv', chunksize=chunksize, usecols=['title', 'tag', 'artist', 'year', 'views', 'features', 'lyrics', 'id', 'language_cld3']):
-        print(f"Running chunk {chunk_idx}...")
+    ids = set()
+
+    for chunk_idx, chunk in enumerate(pd.read_csv('./data/raw/music.csv', chunksize=chunksize, usecols=['lyrics', 'id', 'language_cld3'])):
+        print(f"Processing lyrics chunk {chunk_idx}...")
+
         english_only = chunk['language_cld3'] == 'en'
-        metadata_chunk = chunk.loc[english_only, ['id', 'title', 'tag', 'artist', 'year', 'views', 'features']]
-        metadata = pd.concat([metadata, metadata_chunk])
-        lyrics_chunk = chunk.loc[english_only, ['id','lyrics']]
-        lyrics = pd.concat([lyrics, lyrics_chunk])
-        chunk_idx += 1
+        lyrics_chunk = chunk.loc[english_only, ['id', 'lyrics']]
 
-    metadata.to_parquet('./data/raw/music_metadata.parquet')
-    lyrics.to_parquet('./data/raw/music_lyrics_metadata.parquet')
+        if not lyrics_chunk.empty:
+            ids.update(lyrics_chunk['id'])
+
+            table = pa.Table.from_pandas(lyrics_chunk)
+
+            if lyrics_writer is None:
+                lyrics_writer = pq.ParquetWriter(lyrics_path, table.schema)
+                lyrics_writer.write_table(table)
+
+    if lyrics_writer:
+        lyrics_writer.close()
+
+    for chunk_idx, chunk in enumerate(pd.read_csv('./data/raw/music.csv', chunksize=chunksize, usecols=['title', 'tag', 'artist', 'year', 'views', 'features', 'id', 'language_cld3'])):
+        print(f"Processing metadata chunk {chunk_idx}...")
+
+        english_only = chunk['language_cld3'] == 'en'
+        metadata_chunk = chunk.loc[english_only, ['title', 'tag', 'artist', 'year', 'views', 'features', 'id']]
+        metadata_chunk = metadata_chunk[metadata_chunk['id'].isin(ids)]
+
+        if not metadata_chunk.empty:
+            table = pa.Table.from_pandas(metadata_chunk)
+
+            if metadata_writer is None:
+                metadata_writer = pq.ParquetWriter(metadata_path, table.schema)
+
+            metadata_writer.write_table(table)
+
+    if metadata_writer:
+        metadata_writer.close()
+
+    print("Parquet writing completed.")
 
 if __name__ == "__main__":
     chunk_music()

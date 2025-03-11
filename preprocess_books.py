@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import pandas as pd
 
-
 def preprocess(df: pd.DataFrame):
     df[['author_1', 'author_2']] = df['authors'].str.split("/", n=2, expand=True)
     df = df.drop(columns=["language", "authors", 'isbn'])

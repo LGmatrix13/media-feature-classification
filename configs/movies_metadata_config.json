@@ -126,8 +126,9 @@
       "args": ["freq", 7]
     },
     {
-      "action": "z_score_norm",
-      "attribute": "popularity"
+      "action": "make_mean_bins",
+      "attribute": "popularity",
+      "args": ["freq", 7]
     }
   ],
   "plotting": [
