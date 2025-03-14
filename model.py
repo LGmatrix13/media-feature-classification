@@ -1,12 +1,27 @@
 from argparse import ArgumentParser, Namespace
 import pickle
+import gensim
+import nltk
 import pandas as pd
 import numpy as np
 from sklearn.cluster import DBSCAN, KMeans
 from sklearn.decomposition import PCA
 from matplotlib import pyplot as plt
+from sklearn.discriminant_analysis import StandardScaler
+from sklearn.metrics import silhouette_score
+from nltk.tokenize import word_tokenize
+    
+def embed(paratext: str, gensim_model) -> np.ndarray:
+    """embed a paratext using gensim"""
+
+    print("Embedding query...")
+    words = word_tokenize(paratext.lower())
+    vectors = [gensim_model[word] for word in words if word in gensim_model]
+    return np.mean(vectors, axis=0) if vectors else np.zeros(300) 
 
 def train(data, type: str) -> tuple[str, any]:
+    """train a clustering model"""
+
     if type == "dbscan":
         model = DBSCAN(eps=0.5, min_samples=5)
         labels = model.fit_predict(data)
@@ -15,14 +30,13 @@ def train(data, type: str) -> tuple[str, any]:
         model = KMeans(n_clusters=4, random_state=42)
         labels = model.fit_predict(data)
         return labels, model
-    elif type == "hdbscan":
-        model = model.HDBSCAN(min_cluster_size=10)  # Adjust this parameter as needed
-        labels = model.fit_predict(data)
-        return labels, model
     else:
         raise ValueError("Invalid type")
 
-def books(type: str, sample_size: int = None) -> tuple[str, any]:
+def books(type: str, sample_size: int = None, verbose: bool = True) -> tuple[str, any]:
+    """prepare data and train model for books"""
+
+    if verbose: print(f"Reading books data...")
     vectors = pd.read_parquet("./data/vectors/books_descriptions_vectors.parquet")
     vectors.columns = ["id", "vector"]
     vectors = vectors[~vectors['vector'].isnull()]
@@ -33,10 +47,14 @@ def books(type: str, sample_size: int = None) -> tuple[str, any]:
     del vectors
     del metadata
     data = np.vstack(df['vector'].values)
+    if verbose: print(f"Training {type} on bookss data...")
     labels, model = train(data=data, type=type)
-    return labels, model
+    return labels, model, data
 
-def movies(type: str, sample_size: int = None) -> tuple[str, any]:
+def movies(type: str, sample_size: int = None, verbose: bool = True) -> tuple[str, any]:
+    """prepare data and train model for movies"""
+
+    if verbose: print(f"Reading movies data...")
     vectors = pd.read_parquet("./data/vectors/movies_overview_vectors.parquet")
     vectors.columns = ["id", "vector"]
     vectors = vectors[~vectors['vector'].isnull()]
@@ -47,10 +65,14 @@ def movies(type: str, sample_size: int = None) -> tuple[str, any]:
     del vectors
     del metadata
     data = np.vstack(df['vector'].values)
+    if verbose: print(f"Training {type} on movies data...")
     labels, model = train(data=data, type=type)
     return labels, model, data
 
-def music(type: str, sample_size: int = None) -> tuple[str, any]:
+def music(type: str, sample_size: int = None, verbose: bool = True) -> tuple[str, any]:
+    """prepare data and train model for music"""
+
+    if verbose: print("Reading music data...")
     vectors = pd.read_parquet("./data/vectors/music_lyrics_vectors.parquet")
     vectors.columns = ["id", "vector"]
     vectors = vectors[~vectors['vector'].isnull()]
@@ -61,10 +83,20 @@ def music(type: str, sample_size: int = None) -> tuple[str, any]:
     del vectors
     del metadata
     data = np.vstack(df['vector'].values)
+    if verbose: print(f"Training {type} on movies data...")
     labels, model = train(data=data, type=type)
     return labels, model, data
 
-def report(data, labels):
+def predict(model: KMeans, vector: np.ndarray) -> int:
+    """prepare data and train model for music"""
+    if isinstance(model, KMeans):
+        return model.predict([vector])[0] + 1
+
+def report(data, labels, verbose: bool = True):
+    """report characteristics of the clustering"""
+
+    if verbose: print("Running PCA to reduce vector deminisons of the data...")
+
     pca = PCA(n_components=2)  # Reduce to 2D for visualization
     reduced_data = pca.fit_transform(data)
 
@@ -74,15 +106,25 @@ def report(data, labels):
     plt.xlabel("PCA Component 1")
     plt.ylabel("PCA Component 2")
     plt.title("KMeans Clustering Visualization (PCA Reduced)")
-    plt.show()
 
+
+    if verbose: print("Generating distribution data of each cluster...", end="\n\n")
     unique_clusters = np.unique(labels)
-    print("Cluster Report:")
+    if len(unique_clusters) > 1:
+        score = silhouette_score(data, labels)
+        print(f"Silhouette Score: {score:.4f}")
+    else:
+        print("Silhouette Score: Not applicable (only one cluster found).")
     for cluster in unique_clusters:
         cluster_indices = np.where(labels == cluster)[0]
-        print(f"Cluster {cluster}: {len(cluster_indices)} points")
+        print(f"Cluster {cluster + 1}: {len(cluster_indices)} points")
+    
+    plt.show()
+
 
 def read(medium: str, type: str, sample_size: int) -> tuple[any, any]:
+    """read a cached model"""
+
     try:
         with open(f'./models/model_{medium}_{type}_{sample_size}.pkl', 'rb') as f:
             return pickle.load(f)
@@ -97,37 +139,67 @@ def main(args: Namespace):
     type = args.type
     medium = args.medium
     sample_size = args.sample_size
-    
-    cached = read(medium=medium, type=type, sample_size=sample_size)
+    verbose = args.verbose
+    paratext = args.paratext
 
-    if cached is not None:
+    nltk.download('punkt')
+    MODEL_PATH = "./models/word2vec-google-news-300.model"  # Path to the pre-saved .npy file
+    gensim_model = gensim.models.keyedvectors.KeyedVectors.load(MODEL_PATH)
+
+    cached = read(medium=medium, type=type, sample_size=sample_size)
+    if cached is not None:        
+        vector = embed(paratext=paratext, gensim_model=gensim_model) if len(paratext) > 0 else None
+        del gensim_model
         labels, model, data = cached
         report(data=data, labels=labels)
+        if len(paratext) > 0: 
+            prediction = predict(model=model, vector=vector)
+            print(f"Predicted cluster: {prediction}")
         return
-
+    
     if medium == "movies":
+        vector = embed(paratext=paratext, gensim_model=gensim_model) if len(paratext) > 0 else None
+        del gensim_model
         labels, model, data = movies(type=type, sample_size=sample_size)
-        report(data=data, labels=labels)
+        report(data=data, labels=labels, verbose=verbose)
+        if vector is not None: 
+            prediction = predict(model=model, vector=vector)
+            print(f"Predicted cluster: {prediction}")
         export(training=(labels,model, data), medium=medium, type=type, sample_size=sample_size)
     elif medium == "music":
+        vector = embed(paratext=paratext, gensim_model=gensim_model) if len(paratext) > 0 else None
+        del gensim_model
         labels, model, data = music(type=type, sample_size=sample_size)
-        report(data=data, labels=labels)
+        report(data=data, labels=labels, verbose=verbose)
+        if vector is not None: 
+            prediction = predict(model=model, vector=vector)
+            print(f"Predicted cluster: {prediction}")
         export(training=(labels,model, data), medium=medium, type=type, sample_size=sample_size)
     elif medium == "books":
+        vector = embed(paratext=paratext, gensim_model=gensim_model) if len(paratext) > 0 else None
+        del gensim_model
         labels, model, data = books(type=type, sample_size=sample_size)
-        report(data=data, labels=labels)
+        report(data=data, labels=labels, verbose=verbose)
+        if vector is not None: 
+            prediction = predict(model=model, vector=vector)
+            print(f"Predicted cluster: {prediction}")
         export(training=(labels,model, data), medium=medium, type=type, sample_size=sample_size)
     else:
         raise ValueError("Invalid medium")
 
 if __name__ == "__main__":
     parser = ArgumentParser(description=(
-        "Specify the type of model",
-        "Specify media medium to cluster on",
-        "Specify the sample size to train on"
+        "Specify media medium to cluster on.",
+        "Specify the type of model.",
+        "Specify the sample size to train on.",
+        "Specify whether to enable verbose reporting.",
+        "Provide custom paratext to classify. Will only classify with kmeans."
     ))
-    parser.add_argument('medium', type=str, choices=["movies", "music", "books"], help='path to JSON config file with proceedures')
-    parser.add_argument('type', type=str, choices=["dbscan", "kmeans", "hbscan"], help='path to JSON config file with proceedures')
-    parser.add_argument('sample_size', type=int, help='path to JSON config file with proceedures')
+    parser.add_argument('medium', type=str, choices=["movies", "music", "books"], help='medium type')
+    parser.add_argument('type', type=str, choices=["dbscan", "kmeans"], help='type of model')
+    parser.add_argument('sample_size', type=int, help='size of sample')
+    parser.add_argument('verbose', nargs='?', type=bool, choices=[True, False], default=True, help="specify verbose printing for each stage")
+    parser.add_argument('paratext', nargs='?', type=str, default='', help="specify verbose printing for each stage")
+
     args = parser.parse_args()
     main(args)

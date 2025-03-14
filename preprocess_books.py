@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 import pandas as pd
 
 def preprocess(df: pd.DataFrame):
