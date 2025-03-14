@@ -4,24 +4,7 @@ import pandas as pd
 import numpy as np
 from nltk.tokenize import word_tokenize
 from sklearn.neighbors import KNeighborsClassifier
-
-def load_data():
-    try:
-        print("Loading cached data...")
-        df_vectors = pd.read_pickle("./data/raw/movies_overview_vectors.pkl")
-        df_metadata = pd.read_pickle("./data/raw/movies_metadata.pkl")
-    except FileNotFoundError:
-        print("Pickle not found. Reading from Parquet (slow)...")
-        df_vectors = pd.read_parquet("./data/raw/movies_overview_vectors.parquet", columns=["pk", "vector"])
-        df_metadata = pd.read_parquet("./data/raw/movies_metadata.parquet", columns=['id', "adult"])   
-        # Save as Pickle for fast future loads
-        df_vectors.to_pickle("./data/raw/movies_overview_vectorss.pkl")
-        df_metadata.to_pickle("./data/raw/movies_metadata.pkl")
     
-    df_vectors.columns = ["id", "vector"]
-    return df_vectors, df_metadata
-    
-# Fast word embedding function
 def embed(paratext: str, model) -> np.ndarray:
     print("Embedding query...")
     words = word_tokenize(paratext.lower())  # Normalize case
