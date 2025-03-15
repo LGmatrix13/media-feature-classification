@@ -8,8 +8,45 @@ from sklearn.cluster import DBSCAN, KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
 from nltk.tokenize import word_tokenize
+from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import normalize    
 import plotly.express as px
+
+def optimal_k(data, max_k=10):
+    inertia = []
+    models = []
+    
+    for k in range(1, max_k + 1):
+        model = KMeans(n_clusters=k, random_state=42)
+        model.fit(data)
+        inertia.append(model.inertia_)
+        models.append(model)
+    
+    delta_inertia = np.diff(inertia)
+    delta_delta_inertia = np.diff(delta_inertia)
+    k_optimal = np.argmin(delta_delta_inertia) + 2
+    return k_optimal
+
+def train_kmeans(data, max_k=10):
+    k = optimal_k(data)
+    model = KMeans(n_clusters=k, random_state=42)
+    labels = model.fit_predict(data)
+    return labels, model
+
+def train_dbscan(data):
+    k = optimal_k(data=data)
+    neighbors = NearestNeighbors(n_neighbors=k)
+    neighbors_fit = neighbors.fit(data)
+    distances, _ = neighbors_fit.kneighbors(data)
+    del neighbors
+    k_distances = np.sort(distances[:, -1])
+    delta_inertia = np.diff(k_distances)
+    delta_delta_inertia = np.diff(delta_inertia)
+    optimal_index = np.argmin(delta_delta_inertia) + 1  # Add 1 because np.diff reduces length
+    optimal_eps = k_distances[optimal_index]
+    model = DBSCAN(eps=optimal_eps, min_samples=50, metric="cosine")
+    labels = model.fit_predict(data)
+    return labels, model
 
 def embed(paratext: str, gensim_model) -> np.ndarray:
     """embed a paratext using gensim"""
@@ -23,13 +60,11 @@ def train(data, type: str) -> tuple[str, any]:
     """train a clustering model"""
 
     if type == "dbscan":
-        model = DBSCAN(eps=0.5, min_samples=500, metric="cosine")
-        labels = model.fit_predict(data)
+        labels, model = train_dbscan(data)
         return labels, model
     elif type == "kmeans":     
         normalized_data = normalize(data, norm='l2')
-        model = KMeans(n_clusters=4, random_state=42)
-        labels = model.fit_predict(normalized_data)
+        labels, model = train_kmeans(normalized_data, max_k=10)
         return labels, model
     else:
         raise ValueError("Invalid type")
@@ -38,17 +73,22 @@ def books(type: str, sample_size: int = None, verbose: bool = True) -> tuple[str
     """prepare data and train model for books"""
 
     if verbose: print(f"Reading books data...")
-    vectors = pd.read_parquet("./data/vectors/books_descriptions_vectors.parquet")
+    vectors = pd.read_pickle("./data/vectors/books_descriptions_vectors.pkl")
     vectors.columns = ["id", "vector"]
     vectors = vectors[~vectors['vector'].isnull()]
     metadata = pd.read_parquet("./data/transformed/books_metadata.parquet")
     metadata = metadata.sample(n=sample_size if sample_size is not None else len(metadata))
     metadata = metadata[['id', 'name', 'author_1']]
     df = vectors.merge(metadata, on="id")
+    def convert(item: str):
+        item = item[1:-1]
+        item = np.array([float(x) for x in item.split(',')])
+        return item
+    df['vector'] = df['vector'].apply(lambda row: convert(item=row))
     del vectors
     del metadata
     data = np.vstack(df['vector'].values)
-    if verbose: print(f"Training {type} on bookss data...")
+    if verbose: print(f"Training {type} on books data...")
     labels, model = train(data=data, type=type)
     return labels, model, data
 
