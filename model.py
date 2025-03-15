@@ -145,7 +145,7 @@ def report(data, labels, verbose: bool = True):
     if verbose: print("Generating distribution data of each cluster...", end="\n\n")
     unique_clusters = np.unique(labels)
     if len(unique_clusters) > 1:
-        score = silhouette_score(data, labels)
+        score = silhouette_score(data, labels, metric="l2")
         print(f"Silhouette Score: {score:.4f}")
     else:
         print("Silhouette Score: Not applicable (only one cluster found).")
