@@ -105,7 +105,7 @@ def report(data, labels, verbose: bool = True):
     plt.colorbar(scatter, label="Cluster")
     plt.xlabel("PCA Component 1")
     plt.ylabel("PCA Component 2")
-    plt.title("KMeans Clustering Visualization (PCA Reduced)")
+    plt.title("Clustering Visualization (PCA Reduced)")
 
 
     if verbose: print("Generating distribution data of each cluster...", end="\n\n")
