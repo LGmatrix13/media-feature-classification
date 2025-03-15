@@ -6,11 +6,11 @@ import pandas as pd
 import numpy as np
 from sklearn.cluster import DBSCAN, KMeans
 from sklearn.decomposition import PCA
-from matplotlib import pyplot as plt
-from sklearn.discriminant_analysis import StandardScaler
 from sklearn.metrics import silhouette_score
 from nltk.tokenize import word_tokenize
-    
+from sklearn.preprocessing import normalize    
+import plotly.express as px
+
 def embed(paratext: str, gensim_model) -> np.ndarray:
     """embed a paratext using gensim"""
 
@@ -23,12 +23,13 @@ def train(data, type: str) -> tuple[str, any]:
     """train a clustering model"""
 
     if type == "dbscan":
-        model = DBSCAN(eps=0.5, min_samples=5)
+        model = DBSCAN(eps=0.5, min_samples=500, metric="cosine")
         labels = model.fit_predict(data)
         return labels, model
-    elif type == "kmeans":       
+    elif type == "kmeans":     
+        normalized_data = normalize(data, norm='l2')
         model = KMeans(n_clusters=4, random_state=42)
-        labels = model.fit_predict(data)
+        labels = model.fit_predict(normalized_data)
         return labels, model
     else:
         raise ValueError("Invalid type")
@@ -97,16 +98,9 @@ def report(data, labels, verbose: bool = True):
 
     if verbose: print("Running PCA to reduce vector deminisons of the data...")
 
-    pca = PCA(n_components=2)  # Reduce to 2D for visualization
+    pca = PCA(n_components=3)  # Reduce to 2D for visualization
     reduced_data = pca.fit_transform(data)
-
-    plt.figure(figsize=(8, 6))
-    scatter = plt.scatter(reduced_data[:, 0], reduced_data[:, 1], c=labels, cmap='viridis', alpha=0.7)
-    plt.colorbar(scatter, label="Cluster")
-    plt.xlabel("PCA Component 1")
-    plt.ylabel("PCA Component 2")
-    plt.title("Clustering Visualization (PCA Reduced)")
-
+    fig = px.scatter_3d(reduced_data, x=0, y=1, z=2, color=labels, title="Cluster Visualization")
 
     if verbose: print("Generating distribution data of each cluster...", end="\n\n")
     unique_clusters = np.unique(labels)
@@ -119,7 +113,7 @@ def report(data, labels, verbose: bool = True):
         cluster_indices = np.where(labels == cluster)[0]
         print(f"Cluster {cluster + 1}: {len(cluster_indices)} points")
     
-    plt.show()
+    fig.show()
 
 
 def read(medium: str, type: str, sample_size: int) -> tuple[any, any]:
