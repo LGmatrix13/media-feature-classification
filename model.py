@@ -4,12 +4,13 @@ import gensim
 import nltk
 import pandas as pd
 import numpy as np
-from sklearn.cluster import DBSCAN, KMeans
+from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
 from nltk.tokenize import word_tokenize
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import normalize    
+from sklearn.metrics.pairwise import cosine_similarity
 import plotly.express as px
 
 def optimal_k(data, max_k=10):
@@ -26,6 +27,14 @@ def optimal_k(data, max_k=10):
     delta_delta_inertia = np.diff(delta_inertia)
     k_optimal = np.argmin(delta_delta_inertia) + 2
     return k_optimal
+
+def train_agglomerative(data):
+    pca = PCA(n_components=20)
+    reduced_data = pca.fit_transform(data)
+    cosine_dist = cosine_similarity(reduced_data)
+    model = AgglomerativeClustering(distance_threshold=None, linkage='average', n_clusters=3)
+    labels = model.fit_predict(cosine_dist)
+    return labels, model
 
 def train_kmeans(data, max_k=10):
     k = optimal_k(data)
@@ -65,6 +74,9 @@ def train(data, type: str) -> tuple[str, any]:
     elif type == "kmeans":     
         normalized_data = normalize(data, norm='l2')
         labels, model = train_kmeans(normalized_data, max_k=10)
+        return labels, model
+    elif type == "agglomerative":
+        labels, model = train_agglomerative(data=data)
         return labels, model
     else:
         raise ValueError("Invalid type")
@@ -145,7 +157,7 @@ def report(data, labels, verbose: bool = True):
     if verbose: print("Generating distribution data of each cluster...", end="\n\n")
     unique_clusters = np.unique(labels)
     if len(unique_clusters) > 1:
-        score = silhouette_score(data, labels, metric="l2")
+        score = silhouette_score(data, labels, metric="cosine")
         print(f"Silhouette Score: {score:.4f}")
     else:
         print("Silhouette Score: Not applicable (only one cluster found).")
@@ -230,7 +242,7 @@ if __name__ == "__main__":
         "Provide custom paratext to classify. Will only classify with kmeans."
     ))
     parser.add_argument('medium', type=str, choices=["movies", "music", "books"], help='medium type')
-    parser.add_argument('type', type=str, choices=["dbscan", "kmeans"], help='type of model')
+    parser.add_argument('type', type=str, choices=["dbscan", "kmeans", "agglomerative"], help='type of model')
     parser.add_argument('sample_size', type=int, help='size of sample')
     parser.add_argument('verbose', nargs='?', type=bool, choices=[True, False], default=True, help="specify verbose printing for each stage")
     parser.add_argument('paratext', nargs='?', type=str, default='', help="specify verbose printing for each stage")

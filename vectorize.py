@@ -1,58 +1,94 @@
-import sqlite3
+from argparse import ArgumentParser, Namespace
+import nltk
 import pandas as pd
+import gensim.downloader as api
 import numpy as np
-from sentence_transformers import SentenceTransformer
+import sqlite3
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
+import pyarrow.parquet as pq
+import os
 
-TYPE = "classification"
-FILE = "./data/raw/books_descriptions.parquet"
-FREETEXT_COLUMN = "description"  # Make sure this column exists in your dataset
-DB_NAME = "./data/vectors/books_vectors.db"
-TABLE_NAME = "embeddings"
+nltk.download('punkt')
+nltk.download('stopwords')
 
-model = SentenceTransformer("nomic-ai/nomic-embed-text-v1", trust_remote_code=True)
+stop_words = set(stopwords.words('english'))
 
-def create_table():
-    """Creates the SQLite table if it does not exist."""
-    with sqlite3.connect(DB_NAME) as conn:
-        cursor = conn.cursor()
-        cursor.execute(f'''
-            CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
-                id INTEGER PRIMARY KEY,
-                vector TEXT
-            )
-        ''')
+def compute_tfidf(texts):
+    vectorizer = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = vectorizer.fit_transform(texts)
+    vocab = vectorizer.get_feature_names_out()
+    return vectorizer, tfidf_matrix, vocab
+
+def is_not_stopword(word):
+    return word not in stop_words
+
+def embed(text: str, model, vectorizer, tfidf_weights, vocab):
+    words = word_tokenize(text.lower())
+    words = [word for word in words if word in vocab and is_not_stopword(word)]
+    
+    vectors = []
+    weights = []
+    
+    for word in words:
+        if word in model:
+            vectors.append(model[word])
+            weights.append(tfidf_weights[vocab.tolist().index(word)])
+    
+    if vectors:
+        weighted_vectors = np.average(vectors, axis=0, weights=weights)
+        return weighted_vectors.tolist()
+    return None
+
+def main(args: Namespace):
+    model = api.load("word2vec-google-news-300")
+    parquet_file = pq.ParquetFile(args.input_file)
+    
+    # Load text data for TF-IDF computation
+    all_texts = []
+    for batch in parquet_file.iter_batches():
+        batch_df = batch.to_pandas()
+        all_texts.extend(batch_df[args.text_column].dropna().astype(str).tolist())
+    
+    vectorizer, tfidf_matrix, vocab = compute_tfidf(all_texts)
+    
+    # SQLite setup
+    conn = sqlite3.connect(args.output_file)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS vectors (
+            pk TEXT PRIMARY KEY,
+            vector BLOB
+        )
+    """)
+    
+    chunksize = 10 ** 6
+    chunk_idx = 0
+    for batch in parquet_file.iter_batches(batch_size=chunksize):
+        print(f"Processing chunk {chunk_idx}...")
+        batch_df = batch.to_pandas()
+        
+        for index, row in batch_df.iterrows():
+            print(f"Vectorizing row {index}...")
+            text = row[args.text_column]
+            pk = row[args.pk_column]
+            
+            if text is not None:
+                vector = embed(text, model, vectorizer, tfidf_matrix[index].toarray()[0], vocab)
+                if vector:
+                    cursor.execute("INSERT INTO vectors (pk, vector) VALUES (?, ?)", (pk, sqlite3.Binary(np.array(vector).tobytes())))
+        
         conn.commit()
-
-def process_data_in_chunks(df: pd.DataFrame, chunk_size=70):
-    """Processes data in chunks and inserts embeddings into SQLite."""
-    num_rows = len(df)
-    total_chunks = (num_rows + chunk_size - 1) // chunk_size 
-    for chunk_idx, i in enumerate(range(0, num_rows, chunk_size), start=1):
-        print(f"Processing chunk {chunk_idx}/{total_chunks} ({i} to {min(i+chunk_size, num_rows)})")
-        chunk = df.iloc[i:i + chunk_size]
-        embeddings = generate_embeddings(df=chunk)
-        insert_into_db(chunk, embeddings)
-
-def generate_embeddings(df: pd.DataFrame):
-    """Generates embeddings for the given DataFrame."""
-    sentences = [f'{TYPE}: {freetext}' for freetext in df[FREETEXT_COLUMN].astype(str).values]
-    embeddings = model.encode(sentences)
-    return embeddings
-
-def insert_into_db(df: pd.DataFrame, embeddings: np.ndarray):
-    """Inserts embeddings into the SQLite database."""
-    with sqlite3.connect(DB_NAME) as conn:
-        cursor = conn.cursor()
-        for idx, embedding in zip(df.index, embeddings):
-            cursor.execute(f'''
-                INSERT INTO {TABLE_NAME} (id, vector)
-                VALUES (?, ?)
-            ''', (int(idx), np.array2string(embedding, separator=',')))
-        conn.commit()
-
-# Create table
-create_table()
+        chunk_idx += 1
+    
+    conn.close()
 
 if __name__ == "__main__":
-    df = pd.read_parquet(FILE)
-    process_data_in_chunks(df=df, chunk_size=70)
+    parser = ArgumentParser(description="Run a vectorization process using a pretrained Word2Vec model with TF-IDF weighting.")
+    parser.add_argument("input_file", type=str, help="Path to input dataset")
+    parser.add_argument("pk_column", type=str, help="Primary key column name")
+    parser.add_argument("text_column", type=str, help="Column name containing text data")
+    parser.add_argument("output_file", type=str, help="SQLite database file path")
+    args = parser.parse_args()
+    main(args)
