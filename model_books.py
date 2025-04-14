@@ -11,7 +11,8 @@ import matplotlib.pyplot as plt
 from sklearn.naive_bayes import MultinomialNB
 
 def custom_tokenizer(text: str):
-    return re.findall(r'\b[a-zA-Z]+\b', text.lower())
+    words = re.findall(r"\b[a-zA-Z]+(?:'[a-zA-Z]+)?\b", text.lower())
+    return words
 
 def check_baseline(test: pd.DataFrame, label_col: str):
     label_counts = test[label_col].value_counts()
@@ -20,20 +21,28 @@ def check_baseline(test: pd.DataFrame, label_col: str):
     return correct / len(test)
 
 from wordcloud import WordCloud
-
-def make_decision_tree_wordcloud(model: DecisionTreeClassifier, feature_names: list):
+def make_decision_tree_wordcloud(model: DecisionTreeClassifier, feature_names: list,max_words=15):
     importances = model.feature_importances_
     word_importances = {word: importance for word, importance in zip(feature_names, importances) if importance > 0}
 
-    wc = WordCloud(width=800, height=400, background_color='white')
-    wc.generate_from_frequencies(word_importances)
+    top_words = dict(sorted(word_importances.items(), key=lambda item: item[1], reverse=True)[:max_words])
+    width, height = 1200, 600
+    wc = WordCloud(
+        width=width,
+        height=height,
+        background_color='white',
+        max_words=max_words,
+        colormap='plasma'
+    )
+    wc.generate_from_frequencies(top_words)
 
-    plt.figure(figsize=(12, 6))
+    # Display the image using a figure that matches WordCloud dimensions
+    plt.figure(figsize=(width / 100, height / 100), dpi=100)
     plt.imshow(wc, interpolation='bilinear')
     plt.axis("off")
-    plt.title("Word Cloud of Important Decision Tree Words")
+    plt.tight_layout(pad=0)  # Remove padding around the word cloud
     plt.show()
-
+  
 def train_and_evaluate_model(X_train, X_test, y_train, y_test, description=""):
     param_grid = {
         'criterion': ['entropy', 'gini'],

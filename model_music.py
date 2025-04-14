@@ -16,7 +16,7 @@ from sklearn.ensemble import RandomForestClassifier
 from wordcloud import WordCloud
 
 def custom_tokenizer(text: str):
-    words = re.findall(r'\b[a-zA-Z]+\b', text.lower())  # Regex to match only words with alphabetic characters
+    words = re.findall(r"\b[a-zA-Z]+(?:'[a-zA-Z]+)?\b", text.lower())
     return words
 
 from wordcloud import WordCloud
@@ -24,7 +24,28 @@ import matplotlib.pyplot as plt
 
 from better_profanity import profanity
 
-def make_decision_tree_wordcloud(model: DecisionTreeClassifier, feature_names: list, max_words=100):
+def make_frequency_wordcloud(vectorizer: CountVectorizer, bow_matrix, max_words=30):
+    # Sum word counts across all documents
+    word_counts = bow_matrix.sum(axis=0).A1  # Convert to flat array
+    vocab = vectorizer.get_feature_names_out()
+    word_freq = dict(zip(vocab, word_counts))
+
+    wc = WordCloud(
+        width=1200,
+        height=600,
+        background_color='white',
+        max_words=max_words,
+        colormap='PuBu'
+    ).generate_from_frequencies(word_freq)
+
+    plt.figure(figsize=(12, 6))
+    plt.imshow(wc, interpolation='bilinear')
+    plt.axis("off")
+    plt.tight_layout()
+    plt.show()
+
+
+def make_decision_tree_wordcloud(model: DecisionTreeClassifier, feature_names: list, max_words=15):
     profanity.load_censor_words()
     importances = model.feature_importances_
     word_importances = {}
@@ -37,18 +58,22 @@ def make_decision_tree_wordcloud(model: DecisionTreeClassifier, feature_names: l
     # Limit to top N most important words
     top_words = dict(sorted(word_importances.items(), key=lambda item: item[1], reverse=True)[:max_words])
 
+
+    width, height = 1200, 600
     wc = WordCloud(
-        width=800,
-        height=400,
+        width=width,
+        height=height,
         background_color='white',
-        max_words=max_words
+        max_words=max_words,
+        colormap='winter'
     )
     wc.generate_from_frequencies(top_words)
 
-    plt.figure(figsize=(12, 6))
+    # Display the image using a figure that matches WordCloud dimensions
+    plt.figure(figsize=(width / 100, height / 100), dpi=100)
     plt.imshow(wc, interpolation='bilinear')
     plt.axis("off")
-    plt.title("Word Cloud of Important Decision Tree Words (Censored)")
+    plt.tight_layout(pad=0)  # Remove padding around the word cloud
     plt.show()
 
 def check_baseline(test: pd.DataFrame):
@@ -138,6 +163,7 @@ def main(args: Namespace):
     documents = sample['lyrics'].values
     vectorizer = CountVectorizer(lowercase=True, stop_words='english', tokenizer=custom_tokenizer)
     bow_matrix = vectorizer.fit_transform(documents)
+    make_frequency_wordcloud(vectorizer, bow_matrix)  # ← Add this here
 
     # Load the tags dataframe
     metadata = pd.read_parquet('./data/transformed/music_metadata.parquet')
