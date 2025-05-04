@@ -159,7 +159,8 @@ class GenreClassifier:
         baseline_correct = self.check_baseline(df, f"{self.genre_col}_GENRE")
         print(f"\nBaseline Accuracy (Most Frequent Genre): {baseline_correct:.2f}")
 
-        selector = SelectKBest(score_func=mutual_info_classif, k=round((len(X.columns)) / 2))
+        k = len(X.columns) if len(X.columns) > 2000 else 2000
+        selector = SelectKBest(score_func=mutual_info_classif, k=k)
         X_new = selector.fit_transform(X_train, y_train)
         selected_features = X.columns[selector.get_support()]
         X_train = pd.DataFrame(X_new, columns=selected_features)
